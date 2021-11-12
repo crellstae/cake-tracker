@@ -25,13 +25,10 @@ function createWindow () {
   win.loadFile('index.html');
   win.setIcon(path.join(__dirname + '/content/icon.png'));
   win.setMenu(null);
-  win.webContents.openDevTools();
 }
 
 async function getBrowser() {
-  browser = await puppeteer.launch({ headless: false, slowMo: 100, args: [
-    '--incognito',
-  ]});
+  browser = await puppeteer.launch({ headless: true, slowMo: 100 });
   return browser;
 }
 
