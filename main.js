@@ -1,3 +1,4 @@
+const fs = require("fs");
 const { app, BrowserWindow } = require('electron')
 const puppeteer = require('puppeteer');
 const ipc = require('electron').ipcMain;
@@ -27,8 +28,10 @@ function createWindow () {
   win.webContents.openDevTools();
 }
 
-async function GetBrowser() {
-  browser = await puppeteer.launch({ headless: true, slowMo: 100 });
+async function getBrowser() {
+  browser = await puppeteer.launch({ headless: false, slowMo: 100, args: [
+    '--incognito',
+  ]});
   return browser;
 }
 
@@ -38,6 +41,13 @@ app.whenReady().then(() => {
 
 ipc.on('create-start-process', async (event, data) => {
   startProccess();
+});
+
+ipc.on('create-staking-qr-process', async (event, data) => {
+  // Elimina la imagen QR de WalletConnect
+  deleteWalletConnectQR();
+
+  startStakingQRProcess();
 });
 
 ipc.on('stop-process', async (event, data) => {
@@ -52,7 +62,11 @@ ipc.on('stop-process', async (event, data) => {
   swapStableToCake = undefined;
   stakingService = undefined;
 
+  // Elimina la imagen QR de WalletConnect
+  deleteWalletConnectQR();
+
   // Remover listeners
+  ipc.removeAllListeners('staking-qr-process');
   ipc.removeAllListeners('start-process');
 });
 
@@ -65,9 +79,9 @@ async function startProccess() {
   ipc.on('start-process', async (event, data) => {
     try {
       // Inicializa navegador y servicios de compra/venta
-      const browser = await GetBrowser();
-      await startStableToCake(browser, event, data);
-      await startCakeToStable(browser, event, data);
+      const browser = await getBrowser();
+      await startStableToCakeService(browser, event, data);
+      await startCakeToStableService(browser, event, data);
       await startStakingService(browser, event, data);
     } catch (err) {
       console.log(err);
@@ -75,7 +89,19 @@ async function startProccess() {
   });
 }
 
-async function startStableToCake(browser, event, data) {
+async function startStakingQRProcess() {
+  // Inicia proceso de escucha
+  ipc.on('staking-qr-process', async(event, data) => {
+    if (stakingService === undefined) return;
+    
+    await stakingService.getProfit(() => {
+    }, (profitData) => {
+      event.reply('start-process', { type: 'staking', error: false, ...profitData });
+    });
+  });
+}
+
+async function startStableToCakeService(browser, event, data) {
   // Inicializar servicio de compra
   swapStableToCake = new Swap(data.stableToken.toLowerCase(), "cake", data.stableTokenAmount, true);
 
@@ -88,7 +114,7 @@ async function startStableToCake(browser, event, data) {
   }
 }
 
-async function startCakeToStable(browser, event, data) {
+async function startCakeToStableService(browser, event, data) {
   // Inicializar servicio de venta
   swapCakeToStable = new Swap('cake', data.stableToken.toLowerCase(), data.cakeAmount, false);
 
@@ -106,18 +132,17 @@ async function startStakingService(browser, event, data) {
   stakingService = new Staking();
 
   try {
-    await stakingService.getQR(browser, () => {
-      event.reply('staking-qr-process', { show: true });
+    await stakingService.getQR(browser, (base64Image) => {
+      event.reply('staking-qr-process', { base64Image: base64Image, show: true });
     });
 
-    ipc.on('staking-qr-process', async(event, data) => {
-      await stakingService.getProfit(() => {
-      }, (profitData) => {
-        event.reply('start-process', { type: 'staking', error: false, ...profitData });
-      });
-
-    });
   } catch (err) {
     event.reply('start-process', { type: 'staking', error: true });
   }
+}
+
+async function deleteWalletConnectQR() {
+  try {
+    fs.unlinkSync(path.join(__dirname + '/content/qr.png'));
+  } catch {}
 }

@@ -32,14 +32,14 @@ class Staking {
 
     // Toma captura de la imagen QR
     await this.page.waitForXPath(walletConnectWrapper);
-    await this.page.screenshot({ path: './content/qr.png', clip: { x: 175, y: 105, width: 450, height: 450 }});
+    const base64Image = await this.page.screenshot({ encoding: 'base64', clip: { x: 175, y: 105, width: 450, height: 450 }});
 
     // Establece solo tokens donde hay staking
     // await this.page.waitForXPath(stakedOnlySelector);
     // let handleStakedOnlySelector = await this.page.$x(stakedOnlySelector);
     // await this.page.evaluate(x => x.click(), handleStakedOnlySelector[0]);
 
-    callback();
+    callback(base64Image);
   }
 
   async getProfit(callback, callbackInterval) {

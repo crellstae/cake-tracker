@@ -39,6 +39,7 @@ function attachStartButton() {
     const investmentAmount = getStableTokenAmount();
     
     ipc.send('create-start-process', { cakeAmount: investmentCakeAmount, stableTokenAmount: investmentAmount, stableToken: currentSellCurrency });
+    ipc.send('create-staking-qr-process', { });
     ipc.send('start-process', { cakeAmount: investmentCakeAmount, stableTokenAmount: investmentAmount, stableToken: currentSellCurrency });
     ipc.on('start-process', (event, args) => {
       if (args.type === 'buy') {
@@ -59,6 +60,8 @@ function attachStartButton() {
       if (args.type === 'staking') {
         if (args.error) return setStatusTag('staking', 'is-danger');
 
+        console.log(args);
+
         setStakingData(args);
         setStatusTag('staking', 'is-success');
 
@@ -71,11 +74,8 @@ function attachStartButton() {
 
     ipc.on('staking-qr-process', (event, args) => {
       if (args.show) {
-        utils.setQRImage('wallet-connect-qr');
+        utils.setBase64Image('wallet-connect-qr', args.base64Image);
         ipc.send('staking-qr-process', {});
-      } else {
-        utils.toggleClass('wallet-connect', 'hide-element');
-        utils.toggleClass('staking', 'hide-element');
       }
     });
   });
@@ -87,11 +87,15 @@ function attachStopButton() {
     // Envia petición de desconexión y detiene procesos
     ipc.send('stop-process');
     ipc.removeAllListeners('start-process');
+    ipc.removeAllListeners('staking-qr-process');
     
     // Toggle para ocultar botones
     setStatusElements(false);
     utils.toggleClass('stop-button', 'hide-element');
     utils.toggleClass('start-button', 'hide-element');
+    utils.setEmptyImage('wallet-connect-qr');
+    utils.setClass('staking', 'hide-element');
+    utils.removeClass('wallet-connect', 'hide-element');
 
     // Resetea tags
     setStatusTag('reset');

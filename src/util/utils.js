@@ -20,12 +20,17 @@ module.exports = {
     if (!element.classList.contains(className)) element.classList.add(className);
     else element.classList.remove(className);
   },
-  setEmptyImage: (selector, className) => {
+  setEmptyImage: (selector) => {
     const element = document.getElementById(selector);
 
-    element.src = './content/qr.png';
+    element.src = './content/empty.png';
   },
-  setQRImage: (selector, className) => {
+  setBase64Image: (selector, base64Image) => {
+    const element = document.getElementById(selector);
+
+    element.src = 'data:image/png;base64,' + base64Image;
+  },
+  setQRImage: (selector) => {
     const element = document.getElementById(selector);
 
     element.src = './content/qr.png';
