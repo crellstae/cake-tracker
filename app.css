@@ -1,0 +1,97 @@
+::-webkit-scrollbar {
+  display: none;
+}
+
+#buy-price, #sell-price {
+  font-weight: bold;
+}
+
+.input {
+  text-align: right;
+}
+
+.input-back-green {
+  color: white;
+  background-color: #00d1b2;
+  font-weight: bold;
+}
+
+.input-back-red {
+  color: white;
+  background-color: #f14668;
+  font-weight: bold;
+}
+
+#wallet-connect {
+  position: absolute;
+  width: 350px;
+  top: 220px;
+  left: 22px;
+}
+
+#wallet-connect .tile {
+  height: 350px;
+}
+
+#wallet-connect .tile .title {
+  text-align: center;
+}
+
+#wallet-connect-qr {
+  height: 250px;
+}
+
+#staking {
+  position: absolute;
+  width: 350px;
+  top: 240px;
+  left: 22px;
+}
+
+#staking .tile {
+  height: 300px;
+}
+
+#staking > .tile .title {
+  text-align: center;
+}
+
+.staking-table .row-title {
+  text-align: center;
+}
+
+.staking-input {
+  text-align: center;
+}
+
+.detail-text {
+  text-align: right;
+  padding-top: 14px;
+}
+
+.label-sell-currency {
+  font-size: 12px;
+  width: 70%;
+  float: left;
+  margin-top: 12px;
+}
+
+.action-sell-currency {
+  text-align: right;
+}
+
+.action-start {
+  text-align: left;
+}
+
+.hide-element {
+  display: none;
+}
+
+.footer {
+  padding: 10px;
+}
+
+.footer .content {
+  font-size: 10px;
+}

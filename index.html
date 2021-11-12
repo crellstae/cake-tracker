@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cake Tracker</title>
+    <link rel="stylesheet" href="./node_modules/bulma/css/bulma.css">
+    <link rel="stylesheet" href="./app.css">
+  </head>
+  <body>
+  <div class="container">
+    <section class="section">
+      <div class="columns">
+        <div class="column">
+          <!-- INIT: Buy Card -->
+          <article class="panel is-primary">
+            <p class="panel-heading">
+              Compra
+            </p>
+            <div class="panel-block">
+              <span class="panel-icon">
+                <i class="fas fa-book" aria-hidden="true"></i>
+              </span>
+              <span id="buy-price">0.00</span>
+            </div>
+          </article>
+          <!-- ENDS: Buy Card-->
+        </div>
+        <div class="column">
+          <!-- INIT: Sell Card -->
+          <article class="panel is-danger">
+            <p class="panel-heading">
+              Venta
+            </p>
+            <div class="panel-block">
+              <span class="panel-icon">
+                <i class="fas fa-book" aria-hidden="true"></i>
+              </span>
+              <span id="sell-price">0.00</span>
+            </div>
+          </article>
+          <!-- ENDS: Sell Card-->
+        </div>
+      </div>
+      <br />
+      <!-- INIT: Details -->
+      <div id="wallet-connect">
+        <div class="tile is-parent">
+          <article class="tile is-child box">
+            <p class="title">WalletConnect</p>
+            <figure class="image is-3by2">
+              <img id="wallet-connect-qr" src="./content/empty.png">
+            </figure>
+          </article>
+        </div>
+      </div>
+      <div id="staking" class="hide-element">
+        <div class="tile is-parent">
+          <article class="tile is-child box">
+            <p class="title">Staking</p>
+            <div class="staking-table">
+              <div class="row-title">CAKES Obtenidos</div>
+              <div class="">
+                <input id="staking-cake-profit" class="input is-small is-rounded staking-input" type="text" value="0.00" readonly>
+              </div>
+              <div class="row-title">BUSD Ganancias</div>
+              <div class="">
+                <input id="staking-stable-profit" class="input is-small is-rounded staking-input" type="text" value="0.00" readonly>
+              </div>
+              <div class="row-title">MXN Ganancias</div>
+              <div class="">
+                <input id="staking-fiat-profit" class="input is-small is-rounded staking-input" type="text" value="0.00" readonly>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text">CAKE Invertido</div>
+        <div class="column is-one-quarter">
+          <input id="investment-amount-cake" class="input is-small is-rounded" type="number" value="0.00">
+        </div>
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text"><span class="token-sell">N/A</span> Invertido</div>
+        <div class="column is-one-quarter">
+          <input id="investment-amount" class="input is-small is-rounded" type="number" value="0.00">
+        </div>
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text">Stop-Loss %</div>
+        <div class="column is-one-quarter">
+          <input class="input is-small is-rounded" type="number" value="3.50">
+        </div>
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text">Take-Profit %</div>
+        <div class="column is-one-quarter">
+          <input class="input is-small is-rounded" type="number" value="3.50">
+        </div>
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text"><span class="token-sell">N/A</span> Tarifa</div>
+        <div class="column is-one-quarter">
+          <input id="stable-rate" class="input is-small is-rounded" type="text" value="0.00" readonly>
+        </div>
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text">MXN Tarifa</div>
+        <div class="column is-one-quarter">
+          <input id="fiat-rate" class="input is-small is-rounded" type="text" value="0.00" readonly>
+        </div>
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text"><span class="token-sell">N/A</span> <span id="stable-profit-text-type">Ganancias</span></div>
+        <div class="column is-one-quarter">
+          <input id="stable-profit" class="input is-small is-rounded" type="text" value="0.00" readonly>
+        </div>
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text">MXN <span id="fiat-profit-text-type">Ganancias</span> $</div>
+        <div class="column is-one-quarter">
+          <input id="fiat-profit" class="input is-small is-rounded" type="text" value="0.00" readonly>
+        </div>
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-two-thirds detail-text">MXN Staking + <span id="fiat-total-profit-text-type">Ganancias</span> $</div>
+        <div class="column is-one-quarter">
+          <input id="fiat-total-profit" class="input is-small is-rounded" type="text" value="0.00" readonly>
+        </div>
+        <div class="column"></div>
+      </div>
+      <!-- ENDS: Details -->
+      <br />
+      <!-- INIT: Actions -->
+      <div class="columns">
+        <div class="column action-sell-currency">
+          <div class="label-sell-currency">Token de Venta:&nbsp;</div>
+          <div class="select is-link">
+            <select id="sellCurrency">
+              <option>BUSD</option>
+              <option>USDT</option>
+            </select>
+          </div>
+        </div>
+        <div class="column action-start">
+          <button id="start-button" class="button is-success is-rounded">Iniciar</button>
+          <button id="stop-button" class="button is-light is-rounded hide-element">Detener</button>
+        </div>
+      </div>
+      <!-- ENDS: Actions -->
+    </section>
+    <!-- INIT: Footer -->
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <span id="buy-status" class="tag is-light">Servicio de Compra</span>
+        <span id="sell-status" class="tag is-light">Servicio de Venta</span>
+        <span id="staking-status" class="tag is-light">Servicio de Staking</span>
+      </div>
+    </footer>
+    <!-- ENDS: Footer -->
+  </div>
+  </body>
+</html>
