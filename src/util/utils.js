@@ -35,6 +35,17 @@ module.exports = {
 
     element.src = './content/qr.png';
   },
+  setLoading: (selector) => {
+    const element = document.getElementById(selector);
+
+    element.style.backgroundImage = "url('./content/loading.gif')"
+
+  },
+  removeLoading: (selector) => {
+    const element = document.getElementById(selector);
+
+    element.style.backgroundImage = '';
+  },
   setClass: (selector, className) => {
     const element = document.getElementById(selector);
     

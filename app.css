@@ -88,6 +88,13 @@
   display: none;
 }
 
+#buy-status-loading,
+#sell-status-loading,
+#staking-status-loading {
+  width: 18px;
+  height: 18px;
+}
+
 .footer {
   padding: 10px;
 }

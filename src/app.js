@@ -29,7 +29,12 @@ function attachStartButton() {
   startButton.addEventListener('click', () => {
     if (!validateStartButton()) return;
 
-    setStatusElements(true);
+    // Establece como de solo lectura ciertos campos
+    setReadOnlyElements(true);
+
+    // Muestra loading en los status
+    setStatusTag('loading');
+
     // Toggle de botones de inicio/detener
     utils.toggleClass('start-button', 'hide-element');
     utils.toggleClass('stop-button', 'hide-element');
@@ -90,7 +95,7 @@ function attachStopButton() {
     ipc.removeAllListeners('staking-qr-process');
     
     // Toggle para ocultar botones
-    setStatusElements(false);
+    setReadOnlyElements(false);
     utils.toggleClass('stop-button', 'hide-element');
     utils.toggleClass('start-button', 'hide-element');
     utils.setEmptyImage('wallet-connect-qr');
@@ -178,12 +183,20 @@ function setStatusTag(type, tag = '') {
   switch (type) {
     case 'buy':
       utils.setClass('buy-status', tag);
+      utils.removeLoading('buy-status-loading');
       break;
     case 'sell':
       utils.setClass('sell-status', tag);
+      utils.removeLoading('sell-status-loading');
       break;
     case 'staking':
       utils.setClass('staking-status', tag);
+      utils.removeLoading('staking-status-loading');
+      break;
+    case 'loading':
+      utils.setLoading('buy-status-loading');
+      utils.setLoading('sell-status-loading');
+      utils.setLoading('staking-status-loading');
       break;
     case 'reset':
       utils.removeClass('buy-status', 'is-danger');
@@ -192,6 +205,9 @@ function setStatusTag(type, tag = '') {
       utils.removeClass('sell-status', 'is-success');
       utils.removeClass('staking-status', 'is-danger');
       utils.removeClass('staking-status', 'is-success');
+      utils.removeLoading('buy-status-loading');
+      utils.removeLoading('sell-status-loading');
+      utils.removeLoading('staking-status-loading');
       break;
   }
 }
@@ -200,7 +216,7 @@ function getTotalFiatProfit() {
   return globalFiatTotalProfit = globalFiatProfit + globalFiatStaking;
 }
 
-function setStatusElements(isReadOnly) {
+function setReadOnlyElements(isReadOnly) {
   const investmentCakeInput = document.getElementById('investment-amount-cake');
   const investmentInput = document.getElementById('investment-amount');
   const sellCurrency = document.getElementById('sellCurrency');
