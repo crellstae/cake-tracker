@@ -11,7 +11,6 @@ let globalStableTokenAmount = 0.0;
 let swapCakeToStableService = undefined;
 let swapStableToCakeService = undefined;
 let stakingService = undefined;
-let startProcessEvent = undefined;
 
 function createWindow () {
   const win = new BrowserWindow({
