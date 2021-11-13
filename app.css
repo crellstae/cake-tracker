@@ -6,6 +6,10 @@
   font-weight: bold;
 }
 
+.rate-value {
+  font-size: 11px;
+}
+
 .input {
   text-align: right;
 }
@@ -39,6 +43,19 @@
 
 #wallet-connect-qr {
   height: 250px;
+}
+
+.qr-container {
+  height: 250px;
+}
+
+#qr-loading {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto;
 }
 
 #staking {
@@ -85,7 +102,7 @@
 }
 
 .hide-element {
-  display: none;
+  display: none !important;
 }
 
 #buy-status-loading,

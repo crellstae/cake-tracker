@@ -21,7 +21,8 @@
               <span class="panel-icon">
                 <i class="fas fa-book" aria-hidden="true"></i>
               </span>
-              <span id="buy-price">0.00</span>
+              <span id="buy-price">$0.00</span>&nbsp;&nbsp;
+              <span class="rate-value" id="buy-rate"></span>
             </div>
           </article>
           <!-- ENDS: Buy Card-->
@@ -36,7 +37,8 @@
               <span class="panel-icon">
                 <i class="fas fa-book" aria-hidden="true"></i>
               </span>
-              <span id="sell-price">0.00</span>
+              <span id="sell-price">$0.00</span>&nbsp;&nbsp;
+              <span class="rate-value" id="sell-rate"></span>
             </div>
           </article>
           <!-- ENDS: Sell Card-->
@@ -48,7 +50,8 @@
         <div class="tile is-parent">
           <article class="tile is-child box">
             <p class="title">WalletConnect</p>
-            <figure class="image is-3by2">
+            <figure class="qr-container image is-3by2">
+              <img id="qr-loading" src="./content/loading-qr.gif" class="hide-element" />
               <img id="wallet-connect-qr" src="./content/empty.png">
             </figure>
           </article>
@@ -76,16 +79,16 @@
         </div>
       </div>
       <div class="columns">
-        <div class="column is-two-thirds detail-text">CAKE Invertido</div>
+        <div class="column is-two-thirds detail-text"><span class="token-sell">N/A</span> Invertido</div>
         <div class="column is-one-quarter">
-          <input id="investment-amount-cake" class="input is-small is-rounded" type="number" value="0.00">
+          <input id="investment-amount" class="input is-small is-rounded" type="number" value="0.00">
         </div>
         <div class="column"></div>
       </div>
       <div class="columns">
-        <div class="column is-two-thirds detail-text"><span class="token-sell">N/A</span> Invertido</div>
+        <div class="column is-two-thirds detail-text">CAKE Invertido</div>
         <div class="column is-one-quarter">
-          <input id="investment-amount" class="input is-small is-rounded" type="number" value="0.00">
+          <input id="investment-amount-cake" class="input is-small is-rounded" type="number" value="0.00" readonly>
         </div>
         <div class="column"></div>
       </div>

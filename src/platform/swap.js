@@ -1,4 +1,5 @@
 const config = require('./util/config');
+const utils = require('./util/utils');
 const fiat = require('./util/fiat');
 
 // Tokens disponibles 
@@ -20,15 +21,16 @@ const pairSelector = '#pair';
 const searchInputSelector = '#token-search-input';
 const tokenAmountSelector = '.token-amount-input';
 const exchangeTokenAmountSelector = '//*[@id="swap-currency-output"]/div/div[2]/input';
-const handleExchangePriceSelector = '.sc-iKUVsf';
-const exchangePriceSelector = '//*[@id="swap-page"]/div[1]/div[4]/div/div[2]';
+const stablePriceChangeSelector = '.sc-iKUVsf';
+const stablePriceSelector = '//*[@id="swap-page"]/div[1]/div[4]/div/div[2]';
 
 class Swap {
   fiat = 0;
   page = undefined;
   interval = undefined;
+  stableTokenInvestment = 0;
 
-  constructor(from, to, investment, stableFirst = false) {
+  constructor(from, to, stableFirst = false) {
     // Inversa si es stable token primero
     if (!stableFirst) {
       this.from = tokens.find(x => x.key === from.trim());
@@ -39,55 +41,47 @@ class Swap {
     }
 
     this.stableFirst = stableFirst;
-    this.investment = investment;
   }
 
-  async initialize(browser, callback) {
-    this.initializeWithStableToken(browser, 0, callback);
-  }
-
-  async initializeWithStableToken(browser, stableTokenInvestment, callback) {
+  async initialize(browser) {
     this.fiat = await fiat.value;
-    this.page = await browser.newPage();
+    this.page = await browser.newPage({ context: utils.generateGUID() });
     await this.page.goto(config.pancakeSwapURL);
+  }
+
+  async getProfit(callback) {
+    console.log('Get profit from: ' + this.from.name);
 
     if (await this.setCurrency(inputCurrencySelector, this.from.contract, this.from.name)) {
       await this.setCurrency(outputCurrencySelector, this.to.contract, this.to.name).then(async () => {
         await this.page.type(tokenAmountSelector, this.investment).then(async () => {
-          console.log('=> Getting amount and price from exchange.');
   
           // Cambia la conversión a monto estable
           if (!this.stableFirst) {
-            await this.page.waitForSelector(handleExchangePriceSelector);
-            let handlePriceExchange = await this.page.$(handleExchangePriceSelector);
+            await this.page.waitForSelector(stablePriceChangeSelector);
+            let handlePriceExchange = await this.page.$(stablePriceChangeSelector);
             await handlePriceExchange.evaluate(x => x.click());
           }
-          
-          console.log('=> All is ready, listening now...');
   
           // Se pone a leer el sitio cada determinado tiempo
           this.interval = setInterval(async () => {
             try {
-              const profitData = await this.getProfit(exchangeTokenAmountSelector, exchangePriceSelector, stableTokenInvestment);
+              const profitData = await this.getData();
 
               callback(profitData);
-            } catch {
+            } catch (err) {
+              console.error(err);
               this.disconnect();
             }
-          }, 5000);
+          }, 2500);
         });
       });
     }
   }
 
-  async disconnect() {
-    clearInterval(this.interval);
-  }
-
   async setCurrency(field, token, tokenText) {
     let currencyText = '';
     let canContinue = false;
-    console.log(`=> Getting info for ${tokenText} token.`);
 
     // Dispara evento click para seleccionar token
     await this.page.waitForXPath(field);
@@ -118,16 +112,24 @@ class Swap {
     }
   }
 
-  async getProfit(exchangeTokenAmountField, exchangePriceField, stableTokenInvestment) {
+  async setInvestment(investment) {
+    this.investment = investment;
+  }
+
+  async setStableTokenInvestment(stableTokenInvestment) {
+    this.stableTokenInvestment = stableTokenInvestment;
+  }
+
+  async getData() {
     // Obtiene el monto del token de salida
-    await this.page.waitForXPath(exchangeTokenAmountField);
-    let handleExchangeTokenAmountField = await this.page.$x(exchangeTokenAmountField);
-    let tokenAmount = await this.page.evaluate(x => x.value, handleExchangeTokenAmountField[0]);
+    await this.page.waitForXPath(exchangeTokenAmountSelector);
+    let handleExchangeTokenAmountSelector = await this.page.$x(exchangeTokenAmountSelector);
+    let tokenAmount = await this.page.evaluate(x => x.value, handleExchangeTokenAmountSelector[0]);
 
     // Obtiene la tarifa 
-    await this.page.waitForXPath(exchangePriceField);
-    let handleExchangePriceField = await this.page.$x(exchangePriceField);
-    let exchangeAmountRate = await this.page.evaluate(x => x.textContent, handleExchangePriceField[0])
+    await this.page.waitForXPath(stablePriceSelector);
+    let handleStablePriceSelector = await this.page.$x(stablePriceSelector);
+    let exchangeAmountRate = await this.page.evaluate(x => x.textContent, handleStablePriceSelector[0])
 
     if (!this.stableFirst) {
       exchangeAmountRate = exchangeAmountRate.toString().replace(`${this.to.name} per ${this.from.name}`, '').trim();
@@ -138,11 +140,15 @@ class Swap {
     // Establece los cálculos
     let rate = exchangeAmountRate;
     let fiatRate = rate*this.fiat;
-    let stableProfit = (tokenAmount-stableTokenInvestment);
+    let stableProfit = (tokenAmount-this.stableTokenInvestment);
     let fiatProfit = (stableProfit*this.fiat);
 
-    return { 'rate': rate, 'fiatRate': fiatRate, 'investment': stableTokenInvestment,
+    return { 'rate': rate, 'fiatRate': fiatRate, 'investment': this.stableTokenInvestment,
       'exchangeAmount': tokenAmount, 'stableProfit': stableProfit, 'fiatProfit': fiatProfit };
+  }
+
+  async disconnect() {
+    clearInterval(this.interval);
   }
 }
 
