@@ -16,6 +16,7 @@ const stableTokens = [
 ];
 
 class Swap {
+  rate = 0;
   fiat = 0;
   page = undefined;
   interval = undefined;
@@ -145,6 +146,9 @@ class Swap {
           return elements[ix].textContent;
         }
       }
+
+      // Solo por si marca error
+      return '0';
     }, selector);
 
     // Dependiendo si stable primero, reemplaza la descripción
@@ -154,7 +158,11 @@ class Swap {
       stableRate = stableRate.toString().replace(`${this.from.name} per ${this.to.name}`, '').trim();
     }
 
-    return stableRate;
+    // Asigna solo si stable rate es mayor a 0
+    if (stableRate > 0) rate = stableRate;
+
+    // Para no mostrar valores incorrectos, se puede regresar el stable rate con valor anterior
+    return stableRate > 0 ? stableRate : rate;
   }
 
   async getPair() {
