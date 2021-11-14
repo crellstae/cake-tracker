@@ -1,18 +1,27 @@
 const fs = require('fs');
+const path = require('path');
 
-async function getConfig() {
-  fs.readFile('./config.json', 'utf8' , (err, data) => {
-    if (err) {
-      console.error(err);
-      return;
+let configJson = undefined;
+
+const data = {
+  json: () => {
+    if (configJson === undefined) {
+      fs.readFile(path.join('./config.json'), 'utf8' , (err, json) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+  
+        configJson = JSON.parse(json);
+      });
     }
-
-    return JSON.parse(data);
-  });
+    
+    return configJson;
+  }
 }
 
 module.exports = {
   pancakeSwapURL: 'https://pancakeswap.finance/swap',
   pancakeSwapStakingURL: 'https://pancakeswap.finance/pools',
-  config: getConfig()
+  data: function () { return data.json() }
 }

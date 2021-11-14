@@ -20,7 +20,7 @@ class Staking {
   constructor() { }
 
   async getQR(browser, callback) {
-    console.log('Get staking...');
+    console.log(`[${new Date().toLocaleString()}] Obteniendo imagen QR de WalletConnect.`);
 
     this.fiat = await fiat.value;
     this.page = await browser.newPage();
@@ -44,6 +44,8 @@ class Staking {
   }
 
   async getProfit(callback, callbackInterval) {
+    console.log(`[${new Date().toLocaleString()}] Obteniendo staking.`);
+
     // Establece solo tokens donde hay staking
     await this.page.waitForXPath(stakedOnlySelector);
     let handleStakedOnlySelector = await this.page.$x(stakedOnlySelector);
@@ -79,8 +81,8 @@ class Staking {
         const profitData = { cakeStaked: cakeStaked, tokenName: tokenName, tokenUSDProfit: tokenUSDProfit, tokenProfit: tokenProfit, fiatRate: this.fiat };
 
         callbackInterval(profitData);
-      } catch {
-        this.disconnect();
+      } catch (err) {
+        console.error(`[${new Date().toLocaleString()}] Ocurrió un error al obtener información de staking: ${err.message}`);
       }
     }, 2500);
 

@@ -2,9 +2,11 @@ const { app, BrowserWindow } = require('electron')
 const puppeteer = require('puppeteer');
 const ipc = require('electron').ipcMain;
 const path = require('path');
+const config = require('./src/platform/util/config');
 const Swap = require('./src/platform/swap');
 const Staking = require('./src/platform/staking');
 
+let configData = undefined;
 let browser = undefined;
 let globalCakeStaked = 0.0;
 let globalStableTokenAmount = 0.0;
@@ -36,6 +38,9 @@ async function getBrowser() {
 
 app.whenReady().then(() => {
   createWindow();
+  
+  // Obtiene la configuración
+  configData = config.data();
 });
 
 app.on('window-all-closed', function () {

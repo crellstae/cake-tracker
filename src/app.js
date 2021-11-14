@@ -1,6 +1,6 @@
 var ipc = require('electron').ipcRenderer;
 const utils = require('./util/utils');
-const formatter = require('./util/formatter');
+const formatter = require('./platform/util/formatter');
 
 let currentSellCurrency = 'BUSD';
 let globalCakeStaked = 0.00;
