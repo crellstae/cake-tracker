@@ -105,3 +105,6 @@ dist
 
 # WalletConnect QR Image
 content/qr.png
+
+# App config
+config.json

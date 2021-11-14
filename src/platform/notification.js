@@ -3,7 +3,7 @@ const config = require('./util/config');
 const utils = require('./util/utils');
 
 class Notification {
-  notificationCountdownTime = 1800; //Diferencia de 30 minutos entre correo
+  notificationCountdownTime = 1800; // Diferencia de 30 minutos entre correo
   notificationCountdownRenewTime = 28800; // Diferencia de 8 horas una vez el pool llenado
   notificationPool = []; // Pool notificaciones, hasta 5 en espera hasta renovar
   lastNotificationSent = undefined;
@@ -29,7 +29,7 @@ class Notification {
       // Revisa si ya pasó el tiempo de los 5 minutos
       if (utils.diffBetweeenDatesInSeconds(currentNotificationTime, this.lastNotificationSent) >= this.notificationCountdownTime) {
         // Solo permite enviar correo si el pool no esta lleno
-        if (this.notificationPool.length < 3) {
+        if (this.notificationPool.length < 5) {
           // Agrega el envio actual al pool
           this.notificationPool.push(currentNotificationTime);
 
@@ -39,7 +39,7 @@ class Notification {
         } else {
           // Si la diferencia de la fecha actual y la última notificación excede de las 6 horas, limpia el pool
           if (utils.diffBetweeenDatesInSeconds(new Date(), this.lastNotificationSent) >= this.notificationCountdownRenewTime) {
-            if (this.notificationPool.length >= 3) this.notificationPool = [];
+            if (this.notificationPool.length >= 5) this.notificationPool = [];
           }
         }
       } else {

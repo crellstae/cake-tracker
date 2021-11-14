@@ -69,17 +69,18 @@ class Swap {
             try {
               const profitData = await this.getData();
 
-              callback(profitData);
-
               // Solo notifica cuando es servicio de venta
               if (!this.stableFirst) {
                 await this.stopLoss.track(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
                 await this.takeProfit.track(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
               }
+
+              // Retorna la info al callback
+              callback(profitData);
             } catch (err) {
               console.error(`[${new Date().toLocaleString()}] ${this.from.name}->${this.to.name} - Ocurrió un error al obtener información: ${err.message}`);
             }
-          }, 2500);
+          }, 5000);
         });
       });
     }
@@ -140,7 +141,7 @@ class Swap {
       let elements = document.getElementsByClassName(x);
 
       for (let ix in elements) {
-        if (elements[ix].id !== 'pair' && elements[ix].textContent.includes("per")) {
+        if (elements[ix].id !== 'pair' && elements[ix].textContent !== undefined && elements[ix].textContent.includes("per")) {
           return elements[ix].textContent;
         }
       }

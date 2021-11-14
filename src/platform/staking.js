@@ -84,7 +84,7 @@ class Staking {
       } catch (err) {
         console.error(`[${new Date().toLocaleString()}] Ocurrió un error al obtener información de staking: ${err.message}`);
       }
-    }, 2500);
+    }, 5000);
 
     callback();
   }

@@ -53,6 +53,8 @@ function attachStartButton() {
     ipc.send('create-sell-profit-service', { });
     ipc.send('start-process', { stableTokenAmount: investmentAmount, stableToken: currentSellCurrency });
     ipc.on('profit-process', (event, args) => {
+      console.log(args);
+      
       if (args.type === 'buy') {
         if (args.error) return setStatusTag('buy', 'is-danger');
         

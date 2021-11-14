@@ -33,9 +33,9 @@ class MailSender {
 
     try {
       await this.transporter.sendMail(info);
-      console.log(`[${new Date().toString('dd/MM/yyyy HH:mm:ss')}] Se ha enviado email de tipo: ${type}`);
+      console.log(`[${new Date().toLocaleString()}] Se ha enviado email de tipo: ${type}`);
     } catch (err) {
-      console.error(`[${new Date().toString('dd/MM/yyyy HH:mm:ss')}] Ocurrió un error al enviar notificación: ${ex.message}`);
+      console.error(`[${new Date().toLocaleString()}] Ocurrió un error al enviar notificación: ${err.message}`);
     }
   }
 
