@@ -16,8 +16,8 @@ let stakingService = undefined;
 
 function createWindow () {
   const win = new BrowserWindow({
-    width: 800,
-    height: 835,
+    width: 1080,
+    height: 920,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,

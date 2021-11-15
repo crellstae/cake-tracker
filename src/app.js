@@ -37,6 +37,7 @@ function attachStartButton() {
     setStatusTag('loading');
 
     // Mostrar loading de QR y ocultar imagen vacia
+    utils.setClass('qr-modal', 'is-active');
     utils.removeClass('qr-loading', 'hide-element');
     utils.setClass('wallet-connect-qr', 'hide-element');
 
@@ -74,7 +75,7 @@ function attachStartButton() {
         if (args.error) return setStatusTag('staking', 'is-danger');
 
         if (args.tokenProfit > 0) {
-          utils.setClass('wallet-connect', 'hide-element');
+          utils.removeClass('qr-modal', 'is-active');
           utils.removeClass('staking', 'hide-element');
         }
 
@@ -138,8 +139,6 @@ function setData(data) {
   globalStableRate = data.rate;
   globalFiatTotalProfit = getTotalFiatProfit();
 
-  utils.replaceValueById('stable-rate', formatter.token.format(data.rate));
-  utils.replaceValueById('fiat-rate', formatter.token.format(data.fiatRate));
   utils.replaceValueById('stable-profit', formatter.token.format(data.stableProfit));
   utils.replaceValueById('fiat-profit', formatter.token.format(data.fiatProfit));
   utils.replaceValueById('fiat-total-profit', formatter.token.format(globalFiatTotalProfit));

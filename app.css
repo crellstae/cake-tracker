@@ -2,8 +2,16 @@
   display: none;
 }
 
+.section {
+  padding: 1rem 1.0rem !important;
+}
+
 #buy-price, #sell-price {
   font-weight: bold;
+}
+
+#tradingview_e1a5c {
+  height: 300px;
 }
 
 .rate-value {
@@ -42,11 +50,11 @@
 }
 
 #wallet-connect-qr {
-  height: 250px;
+  /* height: 250px; */
 }
 
-.qr-container {
-  height: 250px;
+#qr-container {
+  background: white;
 }
 
 #qr-loading {
@@ -66,15 +74,32 @@
 }
 
 #staking .tile {
-  height: 300px;
+  max-height: 250px;
 }
 
 #staking > .tile .title {
   text-align: center;
 }
 
+.staking-table {
+  overflow-x: scroll;
+  height: 150px;
+  position: relative;
+  overflow-y: scroll;
+  padding: 5px;
+}
+
 .staking-table .row-title {
   text-align: center;
+}
+
+.token-staking-logo {
+  width: 20px;
+  position: absolute;
+}
+
+.token-staking-detail {
+  padding-left: 25px;
 }
 
 .staking-input {
