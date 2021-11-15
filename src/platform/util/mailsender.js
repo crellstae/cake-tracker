@@ -16,18 +16,18 @@ class MailSender {
 
     switch (type) {
       case "stop-loss":
-        info.subject = this.data.mail.templates.stopLoss.subject.replace('#StopLoss#', data.stopLoss);
+        info.subject = this.data.mail.templates.stopLoss.subject.replace('#FiatPerdidas#', formatter.token.format(data.fiatProfit));
         info.html = this.data.mail.templates.stopLoss.body
           .replace('#StopLoss#', data.stopLoss)
           .replace('#MXNTarifa#', formatter.token.format(data.fiatRate))
           .replace('#FiatPerdidas#', formatter.token.format(data.fiatProfit));
       break;
       case "take-profit":
-        info.subject = this.data.mail.templates.takeProfit.subject.replace('#TakeProfit#', data.takeProfit);
+        info.subject = this.data.mail.templates.takeProfit.subject.replace('#FiatGanancias#', formatter.token.format(data.fiatProfit));
         info.html = this.data.mail.templates.takeProfit.body
           .replace('#TakeProfit#', data.takeProfit)
           .replace('#MXNTarifa#', formatter.token.format(data.fiatRate))
-          .replace('#FiatPerdidas#', formatter.token.format(data.fiatProfit));
+          .replace('#FiatGanancias#', formatter.token.format(data.fiatProfit));
       break;
     }
 
