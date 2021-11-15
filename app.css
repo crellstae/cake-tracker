@@ -83,7 +83,7 @@
 
 .staking-table {
   overflow-x: scroll;
-  height: 150px;
+  height: 173px;
   position: relative;
   overflow-y: scroll;
   padding: 5px;
@@ -96,6 +96,13 @@
 .token-staking-logo {
   width: 20px;
   position: absolute;
+}
+
+#token-staking-profit,
+#token-staking-usd,
+#token-staking-fiat,
+#token-staking-staked {
+  font-weight: bold;
 }
 
 .token-staking-detail {

@@ -56,6 +56,7 @@ function attachStartButton() {
     ipc.on('profit-process', (event, args) => {
       console.log(args);
       
+      // Establece los valores de compra
       if (args.type === 'buy') {
         if (args.error) return setStatusTag('buy', 'is-danger');
         
@@ -63,6 +64,7 @@ function attachStartButton() {
         setStatusTag('buy', 'is-success');
       }
 
+      // Establece los valores de venta
       if (args.type === 'sell') {
         if (args.error) return setStatusTag('sell', 'is-danger');
 
@@ -71,18 +73,11 @@ function attachStartButton() {
         setStatusTag('sell', 'is-success');
       }
 
+      // Establece los valores de staking
       if (args.type === 'staking') {
         if (args.error) return setStatusTag('staking', 'is-danger');
 
-        if (args.tokenProfit > 0) {
-          utils.removeClass('qr-modal', 'is-active');
-        }
-
-        if (args.cakeStaked > 0 && globalCakeStaked <= 0) {
-          ipc.send('sell-profit-service', { cakeStaked: args.cakeStaked });
-          ipc.send('buy-profit-service', { });
-        }
-
+        stakingDataValidation(args);
         setStakingData(args);
         setStatusTag('staking', 'is-success');
       }
@@ -145,8 +140,31 @@ function setData(data) {
 }
 
 function setStakingData(data) {
-  globalCakeStaked = data.cakeStaked;
-  globalFiatStaking = data.fiatProfit;
+  globalCakeStaked = data.tokens.reduce((s,o) => { return parseFloat(s)+parseFloat(o.cakeStaked) }, 0);
+  globalFiatStaking = data.tokens.reduce((s,o) => { return s+o.fiatProfit }, 0);
+  
+  utils.replaceValueById('investment-amount-cake', formatter.token.format(globalCakeStaked));
+
+  for (const token of data.tokens) {
+    utils.updateTokenToStaking('staking-rows', token);
+  }
+}
+
+function stakingDataValidation(data) {
+  if (globalFiatStaking > 0) {
+    utils.removeClass('qr-modal', 'is-active');
+  }
+
+  if (globalCakeStaked <= 0) {
+    const cakeStaked = data.tokens.reduce((s,o) => { return parseFloat(s)+parseFloat(o.cakeStaked) }, 0);
+
+    utils.removeClass('qr-loading', 'hide-element');
+    utils.setClass('wallet-connect-qr', 'hide-element');
+
+    // Llama a los servicios de compra/venta
+    ipc.send('sell-profit-service', { cakeStaked: cakeStaked.toString() });
+    ipc.send('buy-profit-service', { });
+  }
 }
 
 function setBackgroundProfit(data) {

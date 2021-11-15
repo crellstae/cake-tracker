@@ -107,7 +107,7 @@ async function startStakingProfitService() {
     // Obtiene el profit
     await stakingService.getProfit(() => {
     }, (profitData) => {
-      event.reply('profit-process', { type: 'staking', error: false, ...profitData[0] });
+      event.reply('profit-process', { type: 'staking', error: false, tokens: [...profitData] });
     });
   });
 }

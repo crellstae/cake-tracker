@@ -127,7 +127,9 @@ class Staking {
 
   async getTokensEarnedData() {
     const selector = 'sc-gJjCVn eeipNk';
+    const logoSelector = 'sc-gXfVKN jKLUHq';
     const tokenInfoSelector = '.sc-iuhXDa.dzmygi';
+    const tokenLogoSelector = '.sc-gXfVKN.jKLUHq'
     const tokenNameSelector = '.sc-gtsrHT.gXQgo';
     const tokenEarnedSelector = '.sc-gtsrHT.bHLiLT';
     const tokenEarnedUSDSelector = '.sc-gtsrHT.MYPrH';
@@ -135,6 +137,7 @@ class Staking {
 
     // Obtiene las filas de tokens que tenemos disponibles
     await this.page.waitForSelector(`div[class*='${selector}']`);
+    await this.page.waitForSelector(`img[class*='${logoSelector}']`);
     const profitData = await this.page.evaluate(x => {
       let elements = document.getElementsByClassName(x.selector);
       let tokens = Array.from(elements);
@@ -143,11 +146,13 @@ class Staking {
       if (tokens !== undefined && tokens.length > 0) {
         for (let token of tokens) {
           const tokenInfo = token.querySelectorAll(x.tokenInfoSelector);
+          const tokenHeader = token.parentElement.previousSibling;
+          let tokenProfit = { };
+
+          console.log(tokenHeader)
 
           // Si tiene mas de dos divs esta correcto
           if (tokenInfo.length >= 1) {
-            let tokenProfit = { };
-
             // Obtiene los elementos necesarios
             const name = tokenInfo[0].querySelector(x.tokenNameSelector);
             const earned = tokenInfo[0].querySelector(x.tokenEarnedSelector);
@@ -163,9 +168,16 @@ class Staking {
             // Realiza pequeños cálculos
             tokenProfit.tokenUSDProfit = tokenProfit.tokenUSDProfit.replace('~', '').replace('USD', '').trim();
             tokenProfit.fiatProfit = tokenProfit.tokenUSDProfit * x.fiat;
-
-            profitDataList.push(tokenProfit);
           }
+
+          // Se obtiene el logo
+          if (tokenHeader !== undefined) {
+            const tokenLogo = tokenHeader.querySelector(x.tokenLogoSelector);
+            console.log(tokenLogo);
+            if (tokenLogo !== undefined && tokenLogo !== null) tokenProfit.logo = tokenLogo.src;
+          }
+
+          profitDataList.push(tokenProfit);
         }
       }
 
@@ -173,6 +185,7 @@ class Staking {
     }, { 
       selector: selector,
       tokenInfoSelector: tokenInfoSelector,
+      tokenLogoSelector: tokenLogoSelector,
       tokenNameSelector: tokenNameSelector,
       tokenEarnedSelector: tokenEarnedSelector,
       tokenEarnedUSDSelector: tokenEarnedUSDSelector,
