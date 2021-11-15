@@ -76,7 +76,6 @@ function attachStartButton() {
 
         if (args.tokenProfit > 0) {
           utils.removeClass('qr-modal', 'is-active');
-          utils.removeClass('staking', 'hide-element');
         }
 
         if (args.cakeStaked > 0 && globalCakeStaked <= 0) {
@@ -115,7 +114,6 @@ function attachStopButton() {
     utils.toggleClass('stop-button', 'hide-element');
     utils.toggleClass('start-button', 'hide-element');
     utils.setEmptyImage('wallet-connect-qr');
-    utils.setClass('staking', 'hide-element');
     utils.removeClass('wallet-connect', 'hide-element');
 
     // Resetea tags
@@ -149,12 +147,6 @@ function setData(data) {
 function setStakingData(data) {
   globalCakeStaked = data.cakeStaked;
   globalFiatStaking = data.fiatProfit;
-  
-  utils.replaceValueById('investment-amount-cake', formatter.token.format(data.cakeStaked));
-  utils.replaceTextById('staking-token-name', data.tokenName.trim());
-  utils.replaceValueById('staking-token-profit', formatter.token.format(data.tokenProfit));
-  utils.replaceValueById('staking-stable-profit', formatter.token.format(data.tokenUSDProfit));
-  utils.replaceValueById('staking-fiat-profit', formatter.token.format(globalFiatStaking));
 }
 
 function setBackgroundProfit(data) {

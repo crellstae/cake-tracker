@@ -4,7 +4,7 @@ const utils = require('./util/utils');
 
 class Notification {
   notificationCountdownTime = 1800; // Diferencia de 30 minutos entre correo
-  notificationCountdownRenewTime = 28800; // Diferencia de 8 horas una vez el pool llenado
+  notificationCountdownRenewTime = 7200; // Diferencia de 2 horas una vez el pool llenado
   notificationPool = []; // Pool notificaciones, hasta 5 en espera hasta renovar
   lastNotificationSent = undefined;
 
