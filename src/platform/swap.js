@@ -38,6 +38,8 @@ class Swap {
   }
 
   async initialize(browser) {
+    console.log(`[${new Date().toLocaleString()}] ${this.from.name}->${this.to.name} - Inicializando swap.`);
+
     this.fiat = await fiat.value;
     this.page = await browser.newPage({ context: utils.generateGUID() });
     await this.page.goto(config.pancakeSwapURL);
@@ -148,7 +150,7 @@ class Swap {
       }
 
       // Solo por si marca error
-      return '0';
+      return 0;
     }, selector);
 
     // Dependiendo si stable primero, reemplaza la descripción
@@ -159,10 +161,15 @@ class Swap {
     }
 
     // Asigna solo si stable rate es mayor a 0
-    if (stableRate > 0) rate = stableRate;
+    if (stableRate > 0) this.rate = stableRate;
 
     // Para no mostrar valores incorrectos, se puede regresar el stable rate con valor anterior
-    return stableRate > 0 ? stableRate : rate;
+    if (stableRate === 0) {
+      console.error(`[${new Date().toLocaleString()}] ${this.from.name}->${this.to.name} - No se pudo obtener stableRate, se usa próximo anterior.`);
+      return this.rate;
+    }
+
+    return stableRate;
   }
 
   async getPair() {

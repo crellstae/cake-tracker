@@ -148,14 +148,13 @@ function setData(data) {
 }
 
 function setStakingData(data) {
-  const stableProfit = data.tokenUSDProfit;
   globalCakeStaked = data.cakeStaked;
-  globalFiatStaking = stableProfit*data.fiatRate;
+  globalFiatStaking = data.fiatProfit;
   
   utils.replaceValueById('investment-amount-cake', formatter.token.format(data.cakeStaked));
   utils.replaceTextById('staking-token-name', data.tokenName.trim());
   utils.replaceValueById('staking-token-profit', formatter.token.format(data.tokenProfit));
-  utils.replaceValueById('staking-stable-profit', formatter.token.format(stableProfit));
+  utils.replaceValueById('staking-stable-profit', formatter.token.format(data.tokenUSDProfit));
   utils.replaceValueById('staking-fiat-profit', formatter.token.format(globalFiatStaking));
 }
 

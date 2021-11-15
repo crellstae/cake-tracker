@@ -90,9 +90,9 @@ async function startProccess() {
 
       // Inicializa navegador y servicios de compra/venta
       const browser = await getBrowser();
-      await startCakeToStableService(browser, event, data);
-      await startStableToCakeService(browser, event, data);
       await startStakingQRService(browser, event, data);
+      await startStableToCakeService(browser, event, data);
+      await startCakeToStableService(browser, event, data);
     } catch (err) {
       console.log(err);
     }
@@ -107,8 +107,7 @@ async function startStakingProfitService() {
     // Obtiene el profit
     await stakingService.getProfit(() => {
     }, (profitData) => {
-      globalCakeStaked = profitData.cakeStaked;
-      event.reply('profit-process', { type: 'staking', error: false, ...profitData });
+      event.reply('profit-process', { type: 'staking', error: false, ...profitData[0] });
     });
   });
 }
@@ -165,9 +164,10 @@ async function startCakeToStableService(browser, event, data) {
 async function startStakingQRService(browser, event, data) {
   // Inicializar servicio de staking
   stakingService = new Staking();
+  await stakingService.initialize(browser);
 
   try {
-    await stakingService.getQR(browser, (base64Image) => {
+    await stakingService.getQR((base64Image) => {
       event.reply('staking-qr-service', { base64Image: base64Image, show: true });
     });
 
