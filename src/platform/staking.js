@@ -1,12 +1,15 @@
 const config = require('./util/config');
 const fiat = require('./util/fiat');
+const Notification = require('./notification');
 
 class Staking {
   fiat = 0;
   page = undefined;
   interval = undefined;
 
-  constructor() { }
+  constructor() {
+    this.notification = new Notification('staking');
+  }
 
   async initialize(browser) {
     console.log(`[${new Date().toLocaleString()}] Inicializando componente de Staking.`);
@@ -34,6 +37,14 @@ class Staking {
   async getProfit(callback, callbackInterval) {
     console.log(`[${new Date().toLocaleString()}] Obteniendo staking.`);
 
+    // const isLoadingInterval = setInterval(async () => {
+    //   const isLoading = await this.pageIsLoading();
+
+    //   console.log(isLoading);
+
+    //   if (!isLoading) clearInterval(isLoadingInterval);
+    // }, 2500);
+
     // Establece solo tokens donde hay staking
     await this.clickOnStakedOnly();
 
@@ -44,6 +55,8 @@ class Staking {
     this.interval = setInterval(async () => {
       try {
         const profitData = await this.getTokensEarnedData();
+
+        this.notification.trackStaking(profitData);
 
         callbackInterval(profitData);
       } catch (err) {
@@ -91,7 +104,7 @@ class Staking {
   }
 
   async clickOnTokensEarnedDetail() {
-    const selector = 'sc-dYXZXt jzZUwL';
+    const selector = 'sc-ojivU jjQalL';
     const detailSelector = '.iiWEXc';
     const roleSelector = 'row';
 
@@ -126,13 +139,14 @@ class Staking {
   }
 
   async getTokensEarnedData() {
-    const selector = 'sc-gJjCVn eeipNk';
+    const selector = 'sc-dYXZXt kmLJNA';
     const logoSelector = 'sc-gXfVKN jKLUHq';
-    const tokenInfoSelector = '.sc-iuhXDa.dzmygi';
+    const tokenInfoSelector = '.sc-eKaNGd.eTdZNp';
     const tokenLogoSelector = '.sc-gXfVKN.jKLUHq'
     const tokenNameSelector = '.sc-gtsrHT.gXQgo';
     const tokenEarnedSelector = '.sc-gtsrHT.bHLiLT';
     const tokenEarnedUSDSelector = '.sc-gtsrHT.MYPrH';
+    const tokenAprSelector = '.sc-gtsrHT.gMTdjB';
     const cakeStakedSelector = '.sc-gtsrHT.bHLiLT';
 
     // Obtiene las filas de tokens que tenemos disponibles
@@ -146,10 +160,8 @@ class Staking {
       if (tokens !== undefined && tokens.length > 0) {
         for (let token of tokens) {
           const tokenInfo = token.querySelectorAll(x.tokenInfoSelector);
-          const tokenHeader = token.parentElement.previousSibling;
+          const tokenHeader = token.previousSibling;
           let tokenProfit = { };
-
-          console.log(tokenHeader)
 
           // Si tiene mas de dos divs esta correcto
           if (tokenInfo.length >= 1) {
@@ -173,8 +185,11 @@ class Staking {
           // Se obtiene el logo
           if (tokenHeader !== undefined) {
             const tokenLogo = tokenHeader.querySelector(x.tokenLogoSelector);
-            console.log(tokenLogo);
             if (tokenLogo !== undefined && tokenLogo !== null) tokenProfit.logo = tokenLogo.src;
+
+            // Se optibe el apr
+            const apr = tokenHeader.querySelector(x.tokenAprSelector);
+            if (apr !== undefined) tokenProfit.apr = apr.textContent.trim();
           }
 
           profitDataList.push(tokenProfit);
@@ -189,11 +204,32 @@ class Staking {
       tokenNameSelector: tokenNameSelector,
       tokenEarnedSelector: tokenEarnedSelector,
       tokenEarnedUSDSelector: tokenEarnedUSDSelector,
+      tokenAprSelector: tokenAprSelector,
       cakeStakedSelector: cakeStakedSelector,
       fiat: this.fiat
     });
 
     return profitData;
+  }
+
+  async pageIsLoading(isLoading) {
+    const selector = 'sc-fyGvY fLibQH';
+    let result = false;
+
+    if (isLoading === undefined || isLoading) {
+      // Dispara evento click para conexión de la wallet
+      await this.page.waitForSelector(`div[class*='${selector}']`);
+      result = await this.page.evaluate(x => {
+        const loader = document.getElementsByClassName(x.selector);
+        console.log(loader);
+
+        if (loader !== undefined || loader !== null) return true;
+
+        return false;
+      }, { selector: selector });
+    }
+
+    return result;
   }
 
   async disconnect() {

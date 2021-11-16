@@ -29,6 +29,29 @@ class MailSender {
           .replace('#MXNTarifa#', formatter.token.format(data.fiatRate))
           .replace('#FiatGanancias#', formatter.token.format(data.fiatProfit));
       break;
+      case "staking":
+        info.subject = this.data.mail.templates.staking.subject.replace('#FiatGanancias#', formatter.token.format(data.fiatProfitTotal));
+        info.html = '';
+        
+        for (const token of data.tokens) {
+          info.html += `
+          <div style="border: 1px solid grey; border-radius: 5px; box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;">
+            <div style="padding: 5px;">
+              <span><img style="width: 20px; position: relative;" src="${token.logo.replace('.svg', '.png')}" /></span>
+              <span style="padding-left: 5px; margin-top: -18px">
+                <span>Token: <strong>${token.tokenName}</strong></span>&nbsp;
+                <span>Ganado: <strong>${formatter.token.format(token.tokenProfit)}</strong></span>&nbsp;
+                <span>USD: $<strong>${formatter.token.format(token.tokenUSDProfit)}</strong></span>&nbsp;
+                <span>MXN: $<strong>${formatter.token.format(token.fiatProfit)}</strong></span>&nbsp;
+                <span>APR: <strong>${token.apr}</strong></span>&nbsp;
+                <span>Staked: <strong>${formatter.token.format(token.cakeStaked)}</strong></span>
+              </span>
+            </div>
+          </div>
+          <br />
+          `;
+        }
+      break;
     }
 
     try {

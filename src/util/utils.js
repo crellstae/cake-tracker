@@ -7,6 +7,7 @@ module.exports = {
     const profit = formatter.token.format(data.tokenProfit);
     const usd = formatter.token.format(data.tokenUSDProfit);
     const fiat = formatter.token.format(data.fiatProfit);
+    const apr = data.apr;
     const staked = formatter.token.format(data.cakeStaked);
 
     // Si no existe el token en staking, lo crea
@@ -19,9 +20,10 @@ module.exports = {
       tokenRow.innerHTML = `
         <span><img class="token-staking-logo" src="${data.logo}" /></span>
         <span class="token-staking-detail">
-          <span style="font-size: 12px;">${name}: <span id="token-staking-profit">${profit}</span>&nbsp;|</span>
-          <span style="font-size: 12px;">USD: <span id="token-staking-usd">${usd}</span>&nbsp;|</span>
-          <span style="font-size: 12px;">MXN: <span id="token-staking-fiat">${fiat}</span>&nbsp;|</span>
+          <span style="font-size: 12px;">${name}: <span id="token-staking-profit">${profit}</span>&nbsp;</span>
+          <span style="font-size: 12px;">USD: $<span id="token-staking-usd">${usd}</span>&nbsp;</span>
+          <span style="font-size: 12px;">MXN: $<span id="token-staking-fiat">${fiat}</span>&nbsp;</span>
+          <span style="font-size: 12px;">APR: <span id="token-staking-apr">${apr}</span>&nbsp;</span>
           <span style="font-size: 12px;">STAKED: <span id="token-staking-staked">${staked}</span>&nbsp;</span>
         </span>
       `;
@@ -34,6 +36,7 @@ module.exports = {
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-profit', profit);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-usd', usd);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-fiat', fiat);
+    module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-apr', apr);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-staked', staked);
   },
   replaceText: (selector, text) => {

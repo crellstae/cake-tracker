@@ -101,11 +101,13 @@
 #token-staking-profit,
 #token-staking-usd,
 #token-staking-fiat,
+#token-staking-apr,
 #token-staking-staked {
   font-weight: bold;
 }
 
 .token-staking-detail {
+  font-size: 10px;
   padding-left: 25px;
 }
 

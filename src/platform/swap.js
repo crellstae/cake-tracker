@@ -74,8 +74,8 @@ class Swap {
 
               // Solo notifica cuando es servicio de venta
               if (!this.stableFirst) {
-                await this.stopLoss.track(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
-                await this.takeProfit.track(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
+                await this.stopLoss.trackProfit(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
+                await this.takeProfit.trackProfit(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
               }
 
               // Retorna la info al callback
@@ -228,7 +228,7 @@ class Swap {
   }
 
   async changeToStablePrice() {
-    const selector = '.sc-iKUVsf';
+    const selector = '.fyYzbE';
 
     // Cambia el valor a stable token
     await this.page.waitForSelector(selector);
