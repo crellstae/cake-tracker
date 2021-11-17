@@ -14,6 +14,10 @@ window.addEventListener('DOMContentLoaded', () => {
   attachStopButton();
   attachOnChangeSellCurrency(currentSellCurrency);
   changeSellCurrency(currentSellCurrency);
+
+  utils.setIdle('buy-status-image');
+  utils.setIdle('sell-status-image');
+  utils.setIdle('staking-status-image');
 });
 
 function attachOnChangeSellCurrency(currentSellCurrency) {
@@ -109,7 +113,6 @@ function attachStopButton() {
     utils.toggleClass('stop-button', 'hide-element');
     utils.toggleClass('start-button', 'hide-element');
     utils.setEmptyImage('wallet-connect-qr');
-    utils.removeClass('wallet-connect', 'hide-element');
 
     // Resetea tags
     setStatusTag('reset');
@@ -210,20 +213,23 @@ function setStatusTag(type, tag = '') {
   switch (type) {
     case 'buy':
       utils.setClass('buy-status', tag);
-      utils.removeLoading('buy-status-loading');
+      utils.removeImage('buy-status-image');
+      setStatusImage(type, tag);
       break;
     case 'sell':
       utils.setClass('sell-status', tag);
-      utils.removeLoading('sell-status-loading');
+      utils.removeImage('sell-status-image');
+      setStatusImage(type, tag);
       break;
     case 'staking':
       utils.setClass('staking-status', tag);
-      utils.removeLoading('staking-status-loading');
+      utils.removeImage('staking-status-image');
+      setStatusImage(type, tag);
       break;
     case 'loading':
-      utils.setLoading('buy-status-loading');
-      utils.setLoading('sell-status-loading');
-      utils.setLoading('staking-status-loading');
+      utils.setLoading('buy-status-image');
+      utils.setLoading('sell-status-image');
+      utils.setLoading('staking-status-image');
       break;
     case 'reset':
       utils.removeClass('buy-status', 'is-danger');
@@ -232,9 +238,26 @@ function setStatusTag(type, tag = '') {
       utils.removeClass('sell-status', 'is-success');
       utils.removeClass('staking-status', 'is-danger');
       utils.removeClass('staking-status', 'is-success');
-      utils.removeLoading('buy-status-loading');
-      utils.removeLoading('sell-status-loading');
-      utils.removeLoading('staking-status-loading');
+      utils.removeImage('buy-status-image');
+      utils.removeImage('sell-status-image');
+      utils.removeImage('staking-status-image');
+      utils.setIdle('buy-status-image');
+      utils.setIdle('sell-status-image');
+      utils.setIdle('staking-status-image');
+      break;
+  }
+}
+
+function setStatusImage(type, tag) {
+  switch (tag) {
+    case 'is-success':
+      utils.setSuccess(`${type}-status-image`);
+      break;
+    case 'is-danger':
+      utils.setError(`${type}-status-image`);
+      break;
+    case 'is-idle':
+      utils.setIdle(`${type}-status-image`);
       break;
   }
 }

@@ -79,13 +79,27 @@ module.exports = {
 
     element.src = './content/qr.png';
   },
+  setIdle: (selector) => {
+    const element = document.getElementById(selector);
+
+    element.style.backgroundImage = "url('./content/idle.png')";
+  },
   setLoading: (selector) => {
     const element = document.getElementById(selector);
 
-    element.style.backgroundImage = "url('./content/loading.gif')"
-
+    element.style.backgroundImage = "url('./content/loading.gif')";
   },
-  removeLoading: (selector) => {
+  setSuccess: (selector) => {
+    const element = document.getElementById(selector);
+
+    element.style.backgroundImage = "url('./content/success.png')";
+  },
+  setError: (selector) => {
+    const element = document.getElementById(selector);
+
+    element.style.backgroundImage = "url('./content/error.png')";
+  },
+  removeImage: (selector) => {
     const element = document.getElementById(selector);
 
     element.style.backgroundImage = '';

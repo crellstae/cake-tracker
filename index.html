@@ -18,11 +18,11 @@
               Compra
             </p>
             <div class="panel-block">
-              <span class="panel-icon">
-                <i class="fas fa-book" aria-hidden="true"></i>
+              <img src="./content/buy.png" />
+              <span class="buy-price-detail">
+                <span id="buy-price">$0.00</span>&nbsp;&nbsp;
+                <span class="rate-value" id="buy-rate"></span>
               </span>
-              <span id="buy-price">$0.00</span>&nbsp;&nbsp;
-              <span class="rate-value" id="buy-rate"></span>
             </div>
           </article>
           <!-- ENDS: Buy Card-->
@@ -34,11 +34,11 @@
               Venta
             </p>
             <div class="panel-block">
-              <span class="panel-icon">
-                <i class="fas fa-book" aria-hidden="true"></i>
+              <img src="./content/sell.png" />
+              <span class="buy-price-detail">
+                <span id="sell-price">$0.00</span>&nbsp;&nbsp;
+                <span class="rate-value" id="sell-rate"></span>
               </span>
-              <span id="sell-price">$0.00</span>&nbsp;&nbsp;
-              <span class="rate-value" id="sell-rate"></span>
             </div>
           </article>
           <!-- ENDS: Sell Card-->
@@ -73,7 +73,10 @@
           <!-- INIT: Staking -->
             <div id="#staking" class="tile">
               <div class="tile is-child box">
-                <p class="title">Staking</p>
+                <span>
+                  <img src="./content/staking.png" />
+                  <span class="title staking-title">Staking</span>
+                </span>
                 <div class="staking-table">
                   <span id="staking-rows">
                   </span>
@@ -140,9 +143,9 @@
     <!-- INIT: Footer -->
     <footer class="footer">
       <div class="content has-text-centered">
-        <span id="buy-status" class="tag is-light"><span id="buy-status-loading">&nbsp;</span>Servicio de Compra</span>
-        <span id="sell-status" class="tag is-light"><span id="sell-status-loading">&nbsp;</span>Servicio de Venta</span>
-        <span id="staking-status" class="tag is-light"><span id="staking-status-loading">&nbsp;</span>Servicio de Staking</span>
+        <span id="buy-status" class="tag is-light"><span id="buy-status-image">&nbsp;</span>Servicio de Compra</span>
+        <span id="sell-status" class="tag is-light"><span id="sell-status-image">&nbsp;</span>Servicio de Venta</span>
+        <span id="staking-status" class="tag is-light"><span id="staking-status-image">&nbsp;</span>Servicio de Staking</span>
       </div>
     </footer>
     <!-- ENDS: Footer -->

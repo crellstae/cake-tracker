@@ -17,7 +17,7 @@ let stakingService = undefined;
 function createWindow () {
   const win = new BrowserWindow({
     width: 1080,
-    height: 920,
+    height: 945,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
@@ -105,10 +105,15 @@ async function startStakingProfitService() {
     if (stakingService === undefined) return;
     
     // Obtiene el profit
-    await stakingService.getProfit(() => {
-    }, (profitData) => {
-      event.reply('profit-process', { type: 'staking', error: false, tokens: [...profitData] });
-    });
+    try {
+      await stakingService.getProfit(() => {
+      }, (profitData) => {
+        event.reply('profit-process', { type: 'staking', error: false, tokens: [...profitData] });
+      });
+    } catch (err) {
+      console.error(err);
+      event.reply('profit-process', { type: 'staking', error: true });
+    }
   });
 }
 
