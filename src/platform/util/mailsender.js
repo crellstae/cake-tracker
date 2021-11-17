@@ -5,7 +5,6 @@ const formatter = require('./formatter');
 class MailSender {
   constructor() {
     this.transporter = this.getTransporter();
-
   }
 
   async send(type, data) {    
