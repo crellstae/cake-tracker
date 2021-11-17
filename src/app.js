@@ -147,6 +147,7 @@ function setStakingData(data) {
   globalFiatStaking = data.tokens.reduce((s,o) => { return s+o.fiatProfit }, 0);
   
   utils.replaceValueById('investment-amount-cake', formatter.token.format(globalCakeStaked));
+  utils.replaceValueById('staking-profit', formatter.token.format(globalFiatStaking));
 
   for (const token of data.tokens) {
     utils.updateTokenToStaking('staking-rows', token);
@@ -196,6 +197,10 @@ function setBackgroundProfit(data) {
   else {
     utils.replaceTextById('fiat-total-profit-text-type', 'Perdidas');
     utils.setClass('fiat-total-profit', 'input-back-red');
+  }
+
+  if (globalFiatStaking >= 0) {
+    utils.setClass('staking-profit', 'input-back-green');
   }
 }
 

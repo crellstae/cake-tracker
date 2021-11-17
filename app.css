@@ -121,6 +121,11 @@
   text-align: center;
 }
 
+#sell-detail-section .column {
+  padding: 10px;
+  padding-right: 20px;
+}
+
 .detail-text {
   text-align: right;
   padding-top: 14px;
