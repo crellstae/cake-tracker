@@ -206,12 +206,12 @@ function setBackgroundProfit(data) {
 
 function setBuyValue(fiat, rate) {
   utils.replaceTextById('buy-price', formatter.currency.format(fiat));
-  utils.replaceTextById('buy-rate', `${formatter.token.format(rate)}`);
+  utils.replaceTextById('buy-rate', `${formatter.token.format(rate)} ${currentSellCurrency}`);
 }
 
 function setSellValue(fiat, rate) {
   utils.replaceTextById('sell-price', formatter.currency.format(fiat));
-  utils.replaceTextById('sell-rate', `${formatter.token.format(rate)}`);
+  utils.replaceTextById('sell-rate', `${formatter.token.format(rate)} ${currentSellCurrency}`);
 }
 
 function setStatusTag(type, tag = '') {
