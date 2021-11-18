@@ -14,6 +14,14 @@ class Notification {
     this.data = config.data();
   }
 
+  async trackAlert(data) {
+    const notifyData = { type: this.type, stablePrice: data.stablePrice, fiatPrice: data.fiatPrice, exchangeAmount: data.exchangeAmount };
+
+    if (this.validationByType(data.priceValue)) {
+      this.send(notifyData);
+    }
+  }
+
   async trackStaking(tokens) {
     const fiatProfitTotal = tokens.reduce((s,o) => { return s+o.fiatProfit }, 0);
     const notifyData = {
@@ -27,7 +35,7 @@ class Notification {
   async trackProfit(fiatProfit, investmentStableValue, sellStableValue, fiatRate) {
     const typeValue = this.getTypeValue(investmentStableValue);
     const stableProfit = this.getStableProfit(investmentStableValue, typeValue);
-    const notifyData = { stopLoss: this.data.saved.stopLoss, fiatRate: fiatRate, fiatProfit: fiatProfit };
+    const notifyData = { stopLoss: this.data.main.stopLoss, fiatRate: fiatRate, fiatProfit: fiatProfit };
     
     if (this.validationByType(sellStableValue, stableProfit)) {
       this.send(notifyData);
@@ -67,14 +75,16 @@ class Notification {
     }
   }
 
-  validationByType(sellStableValue, stableProfit) {
-    if (this.type === 'stop-loss') return (sellStableValue <= stableProfit);
-    if (this.type === 'take-profit') return (sellStableValue >= stableProfit);
+  validationByType(currentStablePrice, stableProfit = 0) {
+    if (this.type === 'stop-loss') return (currentStablePrice <= stableProfit);
+    if (this.type === 'take-profit') return (currentStablePrice >= stableProfit);
+    if (this.type === 'alert-buy') return (currentStablePrice >= this.data.main.alerts.buyPriceEqualOrMinorThan);
+    if (this.type === 'alert-sell') return (currentStablePrice >= this.data.main.alerts.sellPriceEqualOrMayorThan);
   }
 
   getTypeValue(investmentStableValue) {
-    if (this.type === 'stop-loss') return (investmentStableValue*this.data.saved.stopLoss/100);
-    if (this.type === 'take-profit') return (investmentStableValue*this.data.saved.takeProfit/100);
+    if (this.type === 'stop-loss') return (investmentStableValue*this.data.main.stopLoss/100);
+    if (this.type === 'take-profit') return (investmentStableValue*this.data.main.takeProfit/100);
   }
 
   getStableProfit(investmentStableValue, typeValue) {

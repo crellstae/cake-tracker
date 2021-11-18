@@ -5,10 +5,13 @@ Add this file in the root path `config.json` with this content:
 
 ```
 {
-  "saved": {
-    "stabledAmount": 0,
+  "main": {
     "stopLoss": 3.5,
-    "takeProfit": 3.5
+    "takeProfit": 3.5,
+    "alerts": {
+      "buyPriceEqualOrMinorThan": 370.0,
+      "sellPriceEqualOrMayorThan": 422.0
+    }
   },
   "mailer": {
     "from": "",

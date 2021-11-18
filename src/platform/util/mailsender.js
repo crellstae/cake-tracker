@@ -20,14 +20,14 @@ class MailSender {
           .replace('#StopLoss#', data.stopLoss)
           .replace('#MXNTarifa#', formatter.token.format(data.fiatRate))
           .replace('#FiatPerdidas#', formatter.token.format(data.fiatProfit));
-      break;
+        break;
       case "take-profit":
         info.subject = this.data.mail.templates.takeProfit.subject.replace('#FiatGanancias#', formatter.token.format(data.fiatProfit));
         info.html = this.data.mail.templates.takeProfit.body
           .replace('#TakeProfit#', data.takeProfit)
           .replace('#MXNTarifa#', formatter.token.format(data.fiatRate))
           .replace('#FiatGanancias#', formatter.token.format(data.fiatProfit));
-      break;
+        break;
       case "staking":
         info.subject = this.data.mail.templates.staking.subject.replace('#FiatGanancias#', formatter.token.format(data.fiatProfitTotal));
         info.html = '';
@@ -50,7 +50,21 @@ class MailSender {
           <br />
           `;
         }
-      break;
+        break;
+      case "alert-buy":
+        info.subject = this.data.mail.templates.alertBuy.subject.replace('#FiatPrecio', formatter.token.format(data.fiatPrice));
+        info.html = this.data.mail.templates.alertBuy.body
+          .replace('#FiatPrecio#', formatter.token.format(data.fiatPrice))
+          .replace('#StablePrice', formatter.token.format(data.stablePrice))
+          .replace('#ExchangeAmount#', formatter.token.format(data.exchangeAmount));
+        break;
+      case "alert-sell":
+        info.subject = this.data.mail.templates.alertSell.subject.replace('#FiatPrecio', formatter.token.format(data.fiatPrice));
+        info.html = this.data.mail.templates.alertSell.body
+          .replace('#FiatPrecio#', formatter.token.format(data.fiatPrice))
+          .replace('#StablePrice', formatter.token.format(data.stablePrice))
+          .replace('#ExchangeAmount#', formatter.token.format(data.exchangeAmount));
+        break;
     }
 
     try {

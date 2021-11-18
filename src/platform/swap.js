@@ -35,6 +35,8 @@ class Swap {
     this.stableFirst = stableFirst;
     this.stopLoss = new Notification('stop-loss');
     this.takeProfit = new Notification('take-profit');
+    this.alertBuy = new Notification('alert-buy');
+    this.alertSell = new Notification('alert-sell');
   }
 
   async initialize(browser) {
@@ -72,14 +74,20 @@ class Swap {
             try {
               const profitData = await this.getData();
 
+              // Retorna la info al callback
+              callback(profitData);
+
               // Solo notifica cuando es servicio de venta
               if (!this.stableFirst) {
                 await this.stopLoss.trackProfit(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
                 await this.takeProfit.trackProfit(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
-              }
 
-              // Retorna la info al callback
-              callback(profitData);
+                // Alerta de venta
+                await this.alertSell.trackAlert({ stablePrice: profitData.rate, fiatPrice: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount });
+              } else {
+                // Alerta de compra
+                await this.alertBuy.trackAlert({ stablePrice: profitData.rate, fiatPrice: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount });
+              }              
             } catch (err) {
               console.error(`[${new Date().toLocaleString()}] ${this.from.name}->${this.to.name} - Ocurrió un error al obtener información: ${err.message}`);
             }

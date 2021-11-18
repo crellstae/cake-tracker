@@ -128,7 +128,7 @@
 
 .detail-text {
   text-align: right;
-  padding-top: 14px;
+  padding-top: 14px !important;
 }
 
 .label-sell-currency {
