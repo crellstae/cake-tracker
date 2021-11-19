@@ -6,11 +6,12 @@ Add this file in the root path `config.json` with this content:
 ```
 {
   "main": {
+    "preferredNotification": "telegram",
     "stopLoss": 3.5,
     "takeProfit": 3.5,
     "alerts": {
       "buyPriceEqualOrMinorThan": 370.0,
-      "sellPriceEqualOrMayorThan": 422.0
+      "sellPriceEqualOrMayorThan": 400.0
     }
   },
   "mailer": {
@@ -26,17 +27,32 @@ Add this file in the root path `config.json` with this content:
     }
   },
   "mail": {
-    "recipients": "",
+    "recipients": "urabemoon@gmail.com",
     "templates": {
       "stopLoss": {
-        "subject": "Notificación Stop-Loss: #StopLoss#%",
-        "body": "<p>Hola</p><p>Stop-Loss: #StopLoss#%<br />MXN Tarifa: $#MXNTarifa#<br />MXN Perdidas: $#FiatPerdidas#</p>"
+        "subject": "Notificación de Stop-Loss: $#FiatPerdidas#",
+        "body": "<p>Stop-Loss: #StopLoss#%<br />MXN Tarifa $: #MXNTarifa#<br />MXN Perdidas $: #FiatPerdidas#</p>"
       },
       "takeProfit": {
-        "subject": "Notificación Take-Profit: #TakeProfit#%",
-        "body": "<p>Hola</p><p>Take-Profit: #TakeProfit#%<br />MXN Tarifa: $#MXNTarifa#<br />MXN Gananacias: $#FiatGanancias#</p>"
+        "subject": "Notificación de Take-Profit: $#FiatGanancias#",
+        "body": "<p>Take-Profit: #TakeProfit#%<br />MXN Tarifa $: #MXNTarifa#<br />MXN Gananacias $: #FiatGanancias#</p>"
+      },
+      "staking": {
+        "subject": "Notificación de Staking: $#FiatGanancias#"
+      },
+      "alertBuy": {
+        "subject": "Alerta de Precio de Compra: $#FiatPrecio#",
+        "body": "<p>MXN Precio $: #FiatPrecio#<br />Stable-Token Precio: #StablePrice#</p>"
+      },
+      "alertSell": {
+        "subject": "Alerta de Precio de Venta: $#FiatPrecio#",
+        "body": "<p>MXN Precio $: #FiatPrecio#<br />Stable-Token: #StablePrice#<br />"
       }
     }
+  },
+  "telegram": {
+    "token": "",
+    "channel": ""
   }
 }
 ```
