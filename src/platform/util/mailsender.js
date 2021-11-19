@@ -7,7 +7,7 @@ class MailSender {
     this.transporter = this.getTransporter();
   }
 
-  async send(type, data) {    
+  async send(type, data) {
     const info = {
       from: this.data.mailer.from,
       to: this.data.mail.recipients
@@ -40,8 +40,8 @@ class MailSender {
               <span style="padding-left: 5px; margin-top: -18px">
                 <span>Token: <strong>${token.tokenName}</strong></span>&nbsp;
                 <span>Ganado: <strong>${formatter.token.format(token.tokenProfit)}</strong></span>&nbsp;
-                <span>USD: $<strong>${formatter.token.format(token.tokenUSDProfit)}</strong></span>&nbsp;
-                <span>MXN: $<strong>${formatter.token.format(token.fiatProfit)}</strong></span>&nbsp;
+                <span>USD $: <strong>${formatter.token.format(token.tokenUSDProfit)}</strong></span>&nbsp;
+                <span>MXN $: <strong>${formatter.token.format(token.fiatProfit)}</strong></span>&nbsp;
                 <span>APR: <strong>${token.apr}</strong></span>&nbsp;
                 <span>Staked: <strong>${formatter.token.format(token.cakeStaked)}</strong></span>
               </span>
@@ -52,18 +52,16 @@ class MailSender {
         }
         break;
       case "alert-buy":
-        info.subject = this.data.mail.templates.alertBuy.subject.replace('#FiatPrecio', formatter.token.format(data.fiatPrice));
+        info.subject = this.data.mail.templates.alertBuy.subject.replace('#FiatPrecio#', formatter.token.format(data.fiatRate));
         info.html = this.data.mail.templates.alertBuy.body
-          .replace('#FiatPrecio#', formatter.token.format(data.fiatPrice))
-          .replace('#StablePrice', formatter.token.format(data.stablePrice))
-          .replace('#ExchangeAmount#', formatter.token.format(data.exchangeAmount));
+          .replace('#FiatPrecio#', formatter.token.format(data.fiatRate))
+          .replace('#StablePrice#', formatter.token.format(data.rate))
         break;
       case "alert-sell":
-        info.subject = this.data.mail.templates.alertSell.subject.replace('#FiatPrecio', formatter.token.format(data.fiatPrice));
+        info.subject = this.data.mail.templates.alertSell.subject.replace('#FiatPrecio#', formatter.token.format(data.fiatRate));
         info.html = this.data.mail.templates.alertSell.body
-          .replace('#FiatPrecio#', formatter.token.format(data.fiatPrice))
-          .replace('#StablePrice', formatter.token.format(data.stablePrice))
-          .replace('#ExchangeAmount#', formatter.token.format(data.exchangeAmount));
+          .replace('#FiatPrecio#', formatter.token.format(data.fiatRate))
+          .replace('#StablePrice#', formatter.token.format(data.rate))
         break;
     }
 

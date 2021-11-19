@@ -23,6 +23,7 @@
                 <span id="buy-price">$0.00</span>&nbsp;&nbsp;
                 <span class="rate-value" id="buy-rate"></span>
               </span>
+              <img class="detail-image" src="./content/detail.png" data="buy-detail-modal" />
             </div>
           </article>
           <!-- ENDS: Buy Card-->
@@ -35,10 +36,11 @@
             </p>
             <div class="panel-block">
               <img src="./content/sell.png" />
-              <span class="buy-price-detail">
+              <span class="sell-price-detail">
                 <span id="sell-price">$0.00</span>&nbsp;&nbsp;
                 <span class="rate-value" id="sell-rate"></span>
               </span>
+              <img class="detail-image" src="./content/detail.png" data="sell-detail-modal" />
             </div>
           </article>
           <!-- ENDS: Sell Card-->
@@ -160,22 +162,49 @@
   <div id="qr-modal" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content">
-      <p id="qr-container" class="image is-4by3">
+      <div id="qr-container" class="image is-4by3">
         <img id="qr-loading" src="./content/loading-qr.gif" class="hide-element" />
         <img id="wallet-connect-qr" src="./content/empty.png">
-      </p>
+      </div>
     </div>
-    <button class="modal-close is-large" aria-label="close"></button>
+    <button class="modal-close is-large" aria-label="close" data="qr-modal"></button>
   </div>
   <!-- ENDS: Modal WalletConnect QR -->
-  <!-- INIT: Modal Detalle Compra/Venta -->
-  <div id="detail-modal" class="modal">
+  <!-- INIT: Modal Detalle Compra -->
+  <div id="buy-detail-modal" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content">
-      
+      <div id="buy-detail-container">
+        <div class="buy-detail-container box">
+          <span class="token-buy-image"><img src="./content/cake.png" /></span>
+          <span class="token-buy-detail">
+            <span style="font-size: 12px;"><span class="token-sell">N/A</span>: <span class="data-bold" id="token-buy-input"></span>&nbsp;</span>
+            <span style="font-size: 12px;">CAKE: <span class="data-bold" id="token-buy-output"></span>&nbsp;</span>
+            <span style="font-size: 12px;">MXN Inversi&oacute;n $: <span class="data-bold" id="token-buy-fiat"></span>&nbsp;</span>
+          </span>
+        </div>
+      </div>
     </div>
-    <button class="modal-close is-large" aria-label="close"></button>
+    <button class="modal-close is-large" aria-label="close" data="buy-detail-modal"></button>
   </div>
-  <!-- ENDS: Modal Detalle Compra/Venta -->
+  <!-- ENDS: Modal Detalle Compra -->
+  <!-- INIT: Modal Detalle Venta -->
+  <div id="sell-detail-modal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div id="sell-detail-container">
+        <div class="sell-detail-container box">
+          <span class="token-sell-image"><img src="./content/busd.png" /></span>
+          <span class="token-sell-detail">
+            <span style="font-size: 12px;">CAKE: <span class="data-bold" id="token-sell-input"></span>&nbsp;</span>
+            <span style="font-size: 12px;"><span class="token-sell">N/A</span>: <span class="data-bold" id="token-sell-output"></span>&nbsp;</span>
+            <span style="font-size: 12px;">MXN Inversi&oacute;n $: <span class="data-bold" id="token-sell-fiat"></span>&nbsp;</span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close" data="sell-detail-modal"></button>
+  </div>
+  <!-- ENDS: Modal Detalle Venta -->
   </body>
 </html>

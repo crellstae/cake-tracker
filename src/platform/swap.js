@@ -83,10 +83,10 @@ class Swap {
                 await this.takeProfit.trackProfit(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
 
                 // Alerta de venta
-                await this.alertSell.trackAlert({ stablePrice: profitData.rate, fiatPrice: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount });
+                await this.alertSell.trackAlert({ rate: profitData.rate, fiatRate: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount });
               } else {
                 // Alerta de compra
-                await this.alertBuy.trackAlert({ stablePrice: profitData.rate, fiatPrice: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount });
+                await this.alertBuy.trackAlert({ rate: profitData.rate, fiatRate: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount });
               }              
             } catch (err) {
               console.error(`[${new Date().toLocaleString()}] ${this.from.name}->${this.to.name} - Ocurrió un error al obtener información: ${err.message}`);
@@ -108,14 +108,16 @@ class Swap {
     let fiatRate = stableRate*this.fiat;
     let stableProfit = (tokenAmount-this.stableTokenInvestment);
     let fiatProfit = (stableProfit*this.fiat);
+    let fiatExchanged = this.stableFirst ? ((tokenAmount*stableRate)*this.fiat) : (tokenAmount*this.fiat);
 
     const profitData = { 
       rate: stableRate,
       fiatRate: fiatRate,
-      investment: this.stableTokenInvestment,
+      investment: this.stableFirst ? this.investment: this.stableTokenInvestment,
       exchangeAmount: tokenAmount,
       stableProfit: stableProfit,
-      fiatProfit: fiatProfit
+      fiatProfit: fiatProfit,
+      fiatExchanged: fiatExchanged
     }
 
     return profitData;

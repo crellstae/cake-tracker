@@ -14,10 +14,10 @@ class Notification {
     this.data = config.data();
   }
 
-  async trackAlert(data) {
-    const notifyData = { type: this.type, stablePrice: data.stablePrice, fiatPrice: data.fiatPrice, exchangeAmount: data.exchangeAmount };
+  async trackAlert(profitData) {
+    const notifyData = { type: this.type, rate: profitData.rate, fiatRate: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount };
 
-    if (this.validationByType(data.priceValue)) {
+    if (this.validationByType(profitData.fiatRate)) {
       this.send(notifyData);
     }
   }
@@ -75,11 +75,11 @@ class Notification {
     }
   }
 
-  validationByType(currentStablePrice, stableProfit = 0) {
-    if (this.type === 'stop-loss') return (currentStablePrice <= stableProfit);
-    if (this.type === 'take-profit') return (currentStablePrice >= stableProfit);
-    if (this.type === 'alert-buy') return (currentStablePrice >= this.data.main.alerts.buyPriceEqualOrMinorThan);
-    if (this.type === 'alert-sell') return (currentStablePrice >= this.data.main.alerts.sellPriceEqualOrMayorThan);
+  validationByType(currentPrice, stableProfit = 0) {
+    if (this.type === 'stop-loss') return (currentPrice <= stableProfit);
+    if (this.type === 'take-profit') return (currentPrice >= stableProfit);
+    if (this.type === 'alert-buy') return (currentPrice <= this.data.main.alerts.buyPriceEqualOrMinorThan);
+    if (this.type === 'alert-sell') return (currentPrice >= this.data.main.alerts.sellPriceEqualOrMayorThan);
   }
 
   getTypeValue(investmentStableValue) {

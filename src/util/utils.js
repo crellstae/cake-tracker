@@ -20,11 +20,11 @@ module.exports = {
       tokenRow.innerHTML = `
         <span><img class="token-staking-logo" src="${data.logo}" /></span>
         <span class="token-staking-detail">
-          <span style="font-size: 12px;">${name}: <span id="token-staking-profit">${profit}</span>&nbsp;</span>
-          <span style="font-size: 12px;">USD: $<span id="token-staking-usd">${usd}</span>&nbsp;</span>
-          <span style="font-size: 12px;">MXN: $<span id="token-staking-fiat">${fiat}</span>&nbsp;</span>
-          <span style="font-size: 12px;">APR: <span id="token-staking-apr">${apr}</span>&nbsp;</span>
-          <span style="font-size: 12px;">STAKED: <span id="token-staking-staked">${staked}</span>&nbsp;</span>
+          <span style="font-size: 12px;">${name}: <span class="data-bold" id="token-staking-profit">${profit}</span>&nbsp;</span>
+          <span style="font-size: 12px;">USD $: <span class="data-bold" id="token-staking-usd">${usd}</span>&nbsp;</span>
+          <span style="font-size: 12px;">MXN $: <span class="data-bold" id="token-staking-fiat">${fiat}</span>&nbsp;</span>
+          <span style="font-size: 12px;">APR: <span class="data-bold" id="token-staking-apr">${apr}</span>&nbsp;</span>
+          <span style="font-size: 12px;">STAKED: <span class="data-bold" id="token-staking-staked">${staked}</span>&nbsp;</span>
         </span>
       `;
 

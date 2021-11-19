@@ -12,6 +12,8 @@ let globalFiatTotalProfit = 0.00;
 window.addEventListener('DOMContentLoaded', () => {
   attachStartButton();
   attachStopButton();
+  attachDetailButton();
+  attachCloseModal();
   attachOnChangeSellCurrency(currentSellCurrency);
   changeSellCurrency(currentSellCurrency);
 
@@ -59,14 +61,6 @@ function attachStartButton() {
     ipc.send('start-process', { stableTokenAmount: investmentAmount, stableToken: currentSellCurrency });
     ipc.on('profit-process', (event, args) => {
       console.log(args);
-      
-      // Establece los valores de compra
-      if (args.type === 'buy') {
-        if (args.error) return setStatusTag('buy', 'is-danger');
-        
-        setBuyValue(args.fiatRate, args.rate);
-        setStatusTag('buy', 'is-success');
-      }
 
       // Establece los valores de venta
       if (args.type === 'sell') {
@@ -75,6 +69,15 @@ function attachStartButton() {
         setData(args);
         setSellValue(args.fiatRate, args.rate);
         setStatusTag('sell', 'is-success');
+      }
+      
+      // Establece los valores de compra
+      if (args.type === 'buy') {
+        if (args.error) return setStatusTag('buy', 'is-danger');
+        
+        setData(args);
+        setBuyValue(args.fiatRate, args.rate);
+        setStatusTag('buy', 'is-success');
       }
 
       // Establece los valores de staking
@@ -119,6 +122,30 @@ function attachStopButton() {
   });
 }
 
+function attachDetailButton() {
+  const elements = document.getElementsByClassName('detail-image');
+  const buttons = Array.from(elements);
+
+  buttons.forEach((el, ix, data) => {
+    el.addEventListener('click', (event) => {
+      const type = event.currentTarget.getAttribute('data');
+      utils.setClass(type, 'is-active');
+    });
+  });
+}
+
+function attachCloseModal() {
+  const elements = document.getElementsByClassName('modal-close');
+  const buttons = Array.from(elements);
+
+  buttons.forEach((el, ix, data) => {
+    el.addEventListener('click', (event) => {
+      const type = event.currentTarget.getAttribute('data');
+      utils.removeClass(type, 'is-active');
+    });
+  });
+}
+
 function validateStartButton() {
   const investmentAmount = getStableTokenAmount();
 
@@ -135,11 +162,26 @@ function setData(data) {
   globalStableRate = data.rate;
   globalFiatTotalProfit = getTotalFiatProfit();
 
-  utils.replaceValueById('stable-profit', formatter.token.format(data.stableProfit));
+  utils.replaceValueById('stable-profit', formatter.token.format(data.investment));
   utils.replaceValueById('fiat-profit', formatter.token.format(data.fiatProfit));
   utils.replaceValueById('fiat-total-profit', formatter.token.format(globalFiatTotalProfit));
 
+  if (data.type === 'buy') setBuyData(data);
+  if (data.type === 'sell') setSellData(data);
+
   setBackgroundProfit(data);
+}
+
+function setBuyData(data) {
+  utils.replaceTextById('token-buy-input', formatter.token.format(data.investment));
+  utils.replaceTextById('token-buy-output', formatter.token.format(data.exchangeAmount));
+  utils.replaceTextById('token-buy-fiat', formatter.token.format(data.fiatExchanged));
+}
+
+function setSellData(data) {
+  utils.replaceTextById('token-sell-input', formatter.token.format(globalCakeStaked));
+  utils.replaceTextById('token-sell-output', formatter.token.format(data.exchangeAmount));
+  utils.replaceTextById('token-sell-fiat', formatter.token.format(data.fiatExchanged));
 }
 
 function setStakingData(data) {
