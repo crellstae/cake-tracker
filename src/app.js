@@ -1,4 +1,6 @@
 var ipc = require('electron').ipcRenderer;
+const screenshot = require('screenshot-desktop')
+const appScreenshot = require('./util/screenshot');
 const utils = require('./util/utils');
 const formatter = require('./platform/util/formatter');
 
@@ -67,6 +69,7 @@ function attachStartButton() {
         if (args.error) return setStatusTag('sell', 'is-danger');
 
         setData(args);
+        setSellSwap(args);
         setSellValue(args.fiatRate, args.rate);
         setStatusTag('sell', 'is-success');
       }
@@ -75,7 +78,7 @@ function attachStartButton() {
       if (args.type === 'buy') {
         if (args.error) return setStatusTag('buy', 'is-danger');
         
-        setData(args);
+        setBuySwap(args);
         setBuyValue(args.fiatRate, args.rate);
         setStatusTag('buy', 'is-success');
       }
@@ -100,6 +103,12 @@ function attachStartButton() {
         // Lanzar llamada para iniciar captura de staking y lanzar servicio de venta
         ipc.send('staking-profit-service', { });
       }
+    });
+
+    ipc.on('screenshot-service', (event, args) => {
+      appScreenshot((base64Image) => {
+        ipc.send('screenshot-service', base64Image);
+      });
     });
   });
 }
@@ -166,19 +175,16 @@ function setData(data) {
   utils.replaceValueById('fiat-profit', formatter.token.format(data.fiatProfit));
   utils.replaceValueById('fiat-total-profit', formatter.token.format(globalFiatTotalProfit));
 
-  if (data.type === 'buy') setBuyData(data);
-  if (data.type === 'sell') setSellData(data);
-
   setBackgroundProfit(data);
 }
 
-function setBuyData(data) {
+function setBuySwap(data) {
   utils.replaceTextById('token-buy-input', formatter.token.format(data.investment));
   utils.replaceTextById('token-buy-output', formatter.token.format(data.exchangeAmount));
   utils.replaceTextById('token-buy-fiat', formatter.token.format(data.fiatExchanged));
 }
 
-function setSellData(data) {
+function setSellSwap(data) {
   utils.replaceTextById('token-sell-input', formatter.token.format(globalCakeStaked));
   utils.replaceTextById('token-sell-output', formatter.token.format(data.exchangeAmount));
   utils.replaceTextById('token-sell-fiat', formatter.token.format(data.fiatExchanged));

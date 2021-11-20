@@ -8,7 +8,6 @@ const Staking = require('./src/platform/staking');
 
 let configData = undefined;
 let browser = undefined;
-let globalCakeStaked = 0.0;
 let globalStableTokenAmount = 0.0;
 let swapCakeToStableService = undefined;
 let swapStableToCakeService = undefined;
@@ -29,6 +28,10 @@ function createWindow () {
   win.setIcon(path.join(__dirname + '/content/icon.png'));
   win.setMenu(null);
   win.webContents.openDevTools();
+
+  // Obtiene la configuración
+  configData = config.data();
+  config.setWin(win);
 }
 
 async function getBrowser() {
@@ -39,8 +42,7 @@ async function getBrowser() {
 app.whenReady().then(() => {
   createWindow();
   
-  // Obtiene la configuración
-  configData = config.data();
+  
 });
 
 app.on('window-all-closed', function () {
