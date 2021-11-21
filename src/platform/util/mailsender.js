@@ -22,7 +22,7 @@ class MailSender {
         break;
       case "take-profit":
         await this.getScreenshot((screenshot) => {
-          this.sendStopLoss(type, data, screenshot);
+          this.sendTakeProfit(type, data, screenshot);
         });
         break;
       case "staking":
@@ -135,7 +135,7 @@ class MailSender {
     const win = config.getWin();
     win.webContents.send('screenshot-service', {});
 
-    ipc.on('screenshot-service', async (event, args) => {
+    ipc.once('screenshot-service', async (event, args) => {
       if (args === undefined) return undefined;
 
       await callback(args);

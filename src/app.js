@@ -1,5 +1,4 @@
 var ipc = require('electron').ipcRenderer;
-const screenshot = require('screenshot-desktop')
 const appScreenshot = require('./util/screenshot');
 const utils = require('./util/utils');
 const formatter = require('./platform/util/formatter');
@@ -171,7 +170,7 @@ function setData(data) {
   globalStableRate = data.rate;
   globalFiatTotalProfit = getTotalFiatProfit();
 
-  utils.replaceValueById('stable-profit', formatter.token.format(data.investment));
+  utils.replaceValueById('stable-profit', formatter.token.format(data.stableProfit));
   utils.replaceValueById('fiat-profit', formatter.token.format(data.fiatProfit));
   utils.replaceValueById('fiat-total-profit', formatter.token.format(globalFiatTotalProfit));
 
