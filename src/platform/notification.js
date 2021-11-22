@@ -1,6 +1,8 @@
-const MailSender = require('./util/mailsender');
+const ipc = require('electron').ipcMain;
+const Telegram = require('./util/telegram');
 const config = require('./util/config');
 const utils = require('./util/utils');
+const formatter = require('./util/formatter');
 
 class Notification {
   notificationCountdownTime = 1800; // Diferencia de 30 minutos entre correo
@@ -10,24 +12,53 @@ class Notification {
 
   constructor(type) {
     this.type = type;
-    this.mailSender = new MailSender();
     this.data = config.data();
+    this.telegram = new Telegram();
   }
 
   async trackAlert(profitData) {
-    const notifyData = { type: this.type, rate: profitData.rate, fiatRate: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount };
+    const notifyData = { message: '' };
 
     if (this.validationByType(profitData.fiatRate)) {
-      this.send(notifyData);
+    
+      if (this.type === 'alert-buy') {
+        notifyData.message += this.data.telegram.templates.alertBuy.title;
+        notifyData.message += this.data.telegram.templates.alertBuy.message.toString().replaceAll(',', '')
+          .replace('#FiatPrecio#', formatter.token.format(profitData.fiatRate))
+          .replace('#StablePrice#', formatter.token.format(profitData.rate));
+
+        this.send(notifyData);
+      }
+
+      if (this.type === 'alert-sell') {
+        notifyData.message += this.data.telegram.templates.alertSell.title;
+        notifyData.message += this.data.telegram.templates.alertSell.message.toString().replaceAll(',', '')
+          .replace('#FiatPrecio#', formatter.token.format(profitData.fiatRate))
+          .replace('#StablePrice#', formatter.token.format(profitData.rate));
+
+        this.send(notifyData);
+      }
     }
   }
 
   async trackStaking(tokens) {
     const fiatProfitTotal = tokens.reduce((s,o) => { return s+o.fiatProfit }, 0);
-    const notifyData = {
-      fiatProfitTotal: fiatProfitTotal,
-      tokens: tokens
-    };
+    const notifyData = { message: '' };
+
+    notifyData.message += this.data.telegram.templates.staking.title;
+
+    for (const token of tokens) {
+      notifyData.message += this.data.telegram.templates.staking.message.toString().replaceAll(',', '')
+        .replace('#TokenName#', token.tokenName)
+        .replace('#TokenProfit#', formatter.token.format(token.tokenProfit))
+        .replace('#USDProfit#', formatter.token.format(token.tokenUSDProfit))
+        .replace('#FiatProfit#', formatter.token.format(token.fiatProfit))
+        .replace('#TokenAPR#', token.apr)
+        .replace('#CakeStaked#', formatter.token.format(token.cakeStaked));
+    }
+
+    notifyData.message += this.data.telegram.templates.staking.footer.toString()
+      .replace('#fiatProfitTotal#', formatter.token.format(fiatProfitTotal));
 
     this.send(notifyData);
   }
@@ -35,10 +66,38 @@ class Notification {
   async trackProfit(fiatProfit, investmentStableValue, sellStableValue, fiatRate) {
     const typeValue = this.getTypeValue(investmentStableValue);
     const stableProfit = this.getStableProfit(investmentStableValue, typeValue);
-    const notifyData = { stopLoss: this.data.main.stopLoss, fiatRate: fiatRate, fiatProfit: fiatProfit };
+    const notifyData = { photo: undefined,  message: '' };
     
     if (this.validationByType(sellStableValue, stableProfit)) {
-      this.send(notifyData);
+      if (this.type === 'stop-loss') {
+        notifyData.message += this.data.telegram.templates.stopLoss.title;
+
+        await this.getScreenshot((screenshot) => {
+          notifyData.message += this.data.telegram.templates.stopLoss.message.toString().replaceAll(',', '')
+            .replace('#StopLoss#', this.data.main.stopLoss)
+            .replace('#MXNTarifa#', formatter.token.format(fiatRate))
+            .replace('#MXNPerdidas#', formatter.token.format(fiatProfit));
+
+          notifyData.photo = screenshot;
+
+          this.send(notifyData);
+        });
+      }
+
+      if (this.type === 'take-profit') {
+        notifyData.message += this.data.telegram.templates.takeProfit.title;
+
+        await this.getScreenshot((screenshot) => {
+          notifyData.message += this.data.telegram.templates.takeProfit.message.toString().replaceAll(',', '')
+            .replace('#TakeProfit#', this.data.main.takeProfit)
+            .replace('#MXNTarifa#', formatter.token.format(fiatRate))
+            .replace('#MXNGanancias#', formatter.token.format(fiatProfit));
+
+          notifyData.photo = screenshot;
+
+          this.send(notifyData);
+        });
+      }
     }
   }
 
@@ -58,7 +117,9 @@ class Notification {
 
         // Envia el correo
         this.lastNotificationSent = new Date();
-        await this.mailSender.send(this.type, notifyData);
+
+        if (this.type === 'stop-loss' || this.type === 'take-profit') await this.telegram.sendPhoto(notifyData);
+        else this.telegram.sendMessage(notifyData);
       } else {
         // Si la diferencia de la fecha actual y la última notificación excede de las 6 horas, limpia el pool
         if (utils.diffBetweeenDatesInSeconds(new Date(), this.lastNotificationSent) >= this.notificationCountdownRenewTime) {
@@ -70,7 +131,9 @@ class Notification {
       if (this.notificationPool.length === 0) {
         this.notificationPool.push(currentNotificationTime);
         this.lastNotificationSent = new Date();
-        await this.mailSender.send(this.type, notifyData);
+
+        if (this.type === 'stop-loss' || this.type === 'take-profit') await this.telegram.sendMessage(notifyData);
+        else this.telegram.sendMessage(notifyData);
       }
     }
   }
@@ -93,6 +156,18 @@ class Notification {
 
     if (this.type === 'stop-loss') return investment-type;
     if (this.type === 'take-profit') return investment+type;
+  }
+
+  async getScreenshot(callback) {
+    const win = config.getWin();
+    win.webContents.send('screenshot-service', {});
+
+    ipc.once('screenshot-service', async (event, args) => {
+      if (args === undefined) return undefined;
+
+
+      await callback(args);
+    });
   }
 }
 

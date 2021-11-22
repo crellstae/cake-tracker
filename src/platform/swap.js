@@ -80,7 +80,7 @@ class Swap {
               // Solo notifica cuando es servicio de venta
               if (!this.stableFirst) {
                 await this.stopLoss.trackProfit(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
-                await this.takeProfit.trackProfit(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
+                // await this.takeProfit.trackProfit(profitData.fiatProfit, this.stableTokenInvestment, profitData.exchangeAmount, profitData.fiatRate);
 
                 // Alerta de venta
                 await this.alertSell.trackAlert({ rate: profitData.rate, fiatRate: profitData.fiatRate, exchangeAmount: profitData.exchangeAmount });

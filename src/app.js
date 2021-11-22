@@ -106,7 +106,7 @@ function attachStartButton() {
 
     ipc.on('screenshot-service', (event, args) => {
       appScreenshot((base64Image) => {
-        ipc.send('screenshot-service', base64Image);
+        ipc.send('screenshot-service', base64Image.replace('data:image/jpeg;base64,', ''));
       });
     });
   });
