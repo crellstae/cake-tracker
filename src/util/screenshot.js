@@ -56,9 +56,7 @@ function appScreenshot(callback,imageFormat) {
         console.log(e);
     };
 
-    desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
-        console.log(sources);
-        
+    desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {        
         for (const source of sources) {
             // Filter: main screen
             if (source.name === document.title) {

@@ -17,7 +17,7 @@ class Telegram {
   }
 
   async sendPhoto(data) {
-    await this.bot.sendPhoto(this.config.telegram.channel, Buffer.from(data.photo), { caption: data.message, parse_mode: 'html' }, { filename: 'data', contentType: 'application/octet-stream' });
+    await this.bot.sendPhoto(this.config.telegram.channel, Buffer.from(data.photo, 'base64'), { caption: data.message, parse_mode: 'html' }, { filename: 'data', contentType: 'application/octet-stream' });
   }
 }
 

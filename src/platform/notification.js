@@ -132,7 +132,7 @@ class Notification {
         this.notificationPool.push(currentNotificationTime);
         this.lastNotificationSent = new Date();
 
-        if (this.type === 'stop-loss' || this.type === 'take-profit') await this.telegram.sendMessage(notifyData);
+        if (this.type === 'stop-loss' || this.type === 'take-profit') await this.telegram.sendPhoto(notifyData);
         else this.telegram.sendMessage(notifyData);
       }
     }

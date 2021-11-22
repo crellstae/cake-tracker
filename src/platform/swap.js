@@ -238,7 +238,7 @@ class Swap {
   }
 
   async changeToStablePrice() {
-    const selector = '.fyYzbE';
+    const selector = '.iRhSGW';
 
     // Cambia el valor a stable token
     await this.page.waitForSelector(selector);

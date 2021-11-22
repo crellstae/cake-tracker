@@ -104,7 +104,7 @@ class Staking {
   }
 
   async clickOnTokensEarnedDetail() {
-    const selector = 'sc-ojivU jjQalL';
+    const selector = 'sc-gggoXN byiTzm';
     const detailSelector = '.iiWEXc';
     const roleSelector = 'row';
 
@@ -139,9 +139,9 @@ class Staking {
   }
 
   async getTokensEarnedData() {
-    const selector = 'sc-dYXZXt kmLJNA';
+    const selector = 'sc-hmvkKb bFTnFy';
     const logoSelector = 'sc-gXfVKN jKLUHq';
-    const tokenInfoSelector = '.sc-eKaNGd.eTdZNp';
+    const tokenInfoSelector = '.sc-kBqmDu.LzWAL';
     const tokenLogoSelector = '.sc-gXfVKN.jKLUHq'
     const tokenNameSelector = '.sc-gtsrHT.gXQgo';
     const tokenEarnedSelector = '.sc-gtsrHT.bHLiLT';
