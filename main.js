@@ -3,14 +3,18 @@ const puppeteer = require('puppeteer');
 const ipc = require('electron').ipcMain;
 const path = require('path');
 const config = require('./src/platform/util/config');
-const Swap = require('./src/platform/swap');
+const SwapRouter = require('./src/platform/swap-router');
 const Staking = require('./src/platform/staking');
+
+const profitProcessRenderer = 'profit-process-renderer';
+const stakingQRServiceRenderer = 'staking-qr-service-renderer';
+const stakingProfitServiceMain = 'staking-profit-service-main';
+const swapRouterServiceMain = 'swap-router-service-main';
+const startProcessMain = 'start-process-main';
 
 let configData = undefined;
 let browser = undefined;
-let globalStableTokenAmount = 0.0;
-let swapCakeToStableService = undefined;
-let swapStableToCakeService = undefined;
+let swapRouterService = undefined;
 let stakingService = undefined;
 
 function createWindow () {
@@ -41,60 +45,48 @@ async function getBrowser() {
 
 app.whenReady().then(() => {
   createWindow();
-  
-  
 });
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
 
-ipc.on('create-start-process', async (event, data) => {
+ipc.on('create-start-process-main', async (event, data) => {
   startProccess();
 });
 
-ipc.on('create-staking-qr-service', async (event, data) => {
+ipc.on('create-staking-qr-service-main', async (event, data) => {
   startStakingProfitService();
 });
 
-ipc.on('create-buy-profit-service', async (event, data) => {
-  startBuyProfitService();
+ipc.on('create-swap-router-service-main', async (event, data) => {
+  startSwapRouterService();
 });
 
-ipc.on('create-sell-profit-service', async (event, data) => {
-  startSellProfitService();
-});
-
-ipc.on('stop-process', async (event, data) => {
+ipc.on('stop-process-main', async (event, data) => {
   // Desconectar y cerrar procesos
-  if (swapCakeToStableService !== undefined) swapCakeToStableService.disconnect();
-  if (swapStableToCakeService !== undefined) swapStableToCakeService.disconnect();
+  if (swapRouterService !== undefined) swapRouterService.disconnect();
   if (stakingService !== undefined) stakingService.disconnect();
   if (browser !== undefined) browser.disconnect();
   if (browser !== undefined) browser.close();
 
-  swapCakeToStableService = undefined;
-  swapStableToCakeService = undefined;
+  swapRouterService = undefined;
   stakingService = undefined;
 
   // Remover listeners
-  ipc.removeAllListeners('staking-profit-service');
-  ipc.removeAllListeners('buy-profit-service');
-  ipc.removeAllListeners('sell-profit-service');
-  ipc.removeAllListeners('start-process');
+  ipc.removeAllListeners(stakingProfitServiceMain);
+  ipc.removeAllListeners(swapRouterServiceMain);
+  ipc.removeAllListeners(startProcessMain);
 });
 
 async function startProccess() {
   // Inicia proceso de escucha
-  ipc.on('start-process', async (event, data) => {
+  ipc.on(startProcessMain, async (event, data) => {
     try {
-      globalStableTokenAmount = data.stableTokenAmount;
-
       // Inicializa navegador y servicios de compra/venta
       const browser = await getBrowser();
-      await startStakingQRService(browser, event, data);
-      await startStableToCakeService(browser, event, data);
-      await startCakeToStableService(browser, event, data);
+      await initializeSwapRouterService(event, data)
+      await initializeStakingQRService(browser, event, data);
     } catch (err) {
       console.log(err);
     }
@@ -103,83 +95,59 @@ async function startProccess() {
 
 async function startStakingProfitService() {
   // Inicia proceso de escucha
-  ipc.on('staking-profit-service', async(event, data) => {
+  ipc.on(stakingProfitServiceMain, async(event, data) => {
     if (stakingService === undefined) return;
     
     // Obtiene el profit
     try {
       await stakingService.getProfit(() => {
-      }, (profitData) => {
-        event.reply('profit-process', { type: 'staking', error: false, tokens: [...profitData] });
+      }, (result) => {
+        event.reply(profitProcessRenderer, { type: 'staking', error: false, tokens: [...result] });
       });
     } catch (err) {
       console.error(err);
-      event.reply('profit-process', { type: 'staking', error: true });
+      event.reply(profitProcessRenderer, { type: 'staking', error: true });
     }
   });
 }
 
-async function startSellProfitService() {
+async function startSwapRouterService() {
   // Inicia proceso de escucha
-  ipc.on('sell-profit-service', async(event, args) => {
-    if (swapCakeToStableService === undefined) return;
-
-    if (args.cakeStaked > 0) {
-      try {
-        await swapCakeToStableService.setInvestment(args.cakeStaked);
-        await swapCakeToStableService.getProfit((profitData) => {
-          event.reply('profit-process', { type: 'sell', error: false, ...profitData });
-        });
-      } catch (err) {
-        console.error(err);
-        event.reply('profit-process', { type: 'sell', error: true });
-      }
-    }
-  });
-}
-
-async function startBuyProfitService() {
-  // Inicia proceso de escucha
-  ipc.on('buy-profit-service', async(event, args) => {
-    if (swapStableToCakeService === undefined) return;
+  ipc.on(swapRouterServiceMain, async(event, data) => {
+    if (swapRouterService === undefined) return;
+    
+    await swapRouterService.setCakeInvestment(data.cakeStaked);
 
     try {
-      await swapStableToCakeService.getProfit((profitData) => {
-        event.reply('profit-process', { type: 'buy', error: false, ...profitData });
+      await swapRouterService.getProfit((result) => {
+        event.reply(profitProcessRenderer, { error: false, ...result });
       });
     } catch (err) {
-      console.error(err);
-      event.reply('profit-process', { type: 'buy', error: true });
+      console.log(`[${new Date().toLocaleString()}] ${err}`);
+      event.reply(profitProcessRenderer, { error: true });
     }
   });
 }
 
-async function startStableToCakeService(browser, event, data) {
-  // Inicializar servicio de compra
-  swapStableToCakeService = new Swap(data.stableToken.toLowerCase(), "cake", true);
-  await swapStableToCakeService.initialize(browser);
-  await swapStableToCakeService.setInvestment(data.stableTokenAmount);
+async function initializeSwapRouterService(event, data) {
+  // Inicializar servicio de swap
+  swapRouterService = new SwapRouter();
+  await swapRouterService.setStableInvestment(data.stableInvestment);
+  await swapRouterService.initialize();
 }
 
-async function startCakeToStableService(browser, event, data) {
-  // Inicializar servicio de venta
-  swapCakeToStableService = new Swap('cake', data.stableToken.toLowerCase(), false);
-  await swapCakeToStableService.initialize(browser);
-  await swapCakeToStableService.setStableTokenInvestment(data.stableTokenAmount);
-}
-
-async function startStakingQRService(browser, event, data) {
+async function initializeStakingQRService(browser, event, data) {
   // Inicializar servicio de staking
   stakingService = new Staking();
   await stakingService.initialize(browser);
 
   try {
     await stakingService.getQR((base64Image) => {
-      event.reply('staking-qr-service', { base64Image: base64Image, show: true });
+      event.reply(stakingQRServiceRenderer, { base64Image: base64Image, show: true });
     });
 
   } catch (err) {
     console.error(err);
-    event.reply('profit-process', { type: 'staking', error: true });
+    event.reply(profitProcessRenderer, { type: 'staking', error: true });
   }
 }
