@@ -21,7 +21,6 @@ module.exports = {
         <span><img class="token-staking-logo" src="${data.logo}" /></span>
         <span class="token-staking-detail">
           <span style="font-size: 12px;">${name}: <span class="data-bold" id="token-staking-profit">${profit}</span>&nbsp;</span>
-          <span style="font-size: 12px;">USD $: <span class="data-bold" id="token-staking-usd">${usd}</span>&nbsp;</span>
           <span style="font-size: 12px;">MXN $: <span class="data-bold" id="token-staking-fiat">${fiat}</span>&nbsp;</span>
           <span style="font-size: 12px;">APR: <span class="data-bold" id="token-staking-apr">${apr}</span>&nbsp;</span>
           <span style="font-size: 12px;">STAKED: <span class="data-bold" id="token-staking-staked">${staked}</span>&nbsp;</span>
@@ -34,7 +33,6 @@ module.exports = {
 
     // Si ya existe, lo actualiza
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-profit', profit);
-    module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-usd', usd);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-fiat', fiat);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-apr', apr);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-staked', staked);

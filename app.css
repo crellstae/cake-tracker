@@ -85,6 +85,10 @@
   position: absolute;
 }
 
+.disable-staking {
+  float: right;
+}
+
 #staking > .tile .title {
   text-align: center;
 }

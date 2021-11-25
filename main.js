@@ -93,24 +93,6 @@ async function startProccess() {
   });
 }
 
-async function startStakingProfitService() {
-  // Inicia proceso de escucha
-  ipc.on(stakingProfitServiceMain, async(event, data) => {
-    if (stakingService === undefined) return;
-    
-    // Obtiene el profit
-    try {
-      await stakingService.getProfit(() => {
-      }, (result) => {
-        event.reply(profitProcessRenderer, { type: 'staking', error: false, tokens: [...result] });
-      });
-    } catch (err) {
-      console.error(err);
-      event.reply(profitProcessRenderer, { type: 'staking', error: true });
-    }
-  });
-}
-
 async function startSwapRouterService() {
   // Inicia proceso de escucha
   ipc.on(swapRouterServiceMain, async(event, data) => {
@@ -129,14 +111,42 @@ async function startSwapRouterService() {
   });
 }
 
+async function startStakingProfitService() {
+  // Inicia proceso de escucha
+  ipc.on(stakingProfitServiceMain, async(event, data) => {
+    if (stakingService === undefined) return;
+    
+    // Obtiene el profit
+    try {
+      await stakingService.getProfit(() => {
+      }, (result) => {
+        event.reply(profitProcessRenderer, { type: 'staking', error: false, tokens: [...result] });
+      });
+    } catch (err) {
+      console.error(err);
+      event.reply(profitProcessRenderer, { type: 'staking', error: true });
+    }
+  });
+}
+
 async function initializeSwapRouterService(event, data) {
   // Inicializar servicio de swap
   swapRouterService = new SwapRouter();
   await swapRouterService.setStableInvestment(data.stableInvestment);
   await swapRouterService.initialize();
+
+  if (data.stableToken == 'BUSD') await swapRouterService.setBUSD();
+  if (data.stableToken == 'USDT') await swapRouterService.setUSDT();
+
+  if (data.stakingDisable) {
+    event.reply(profitProcessRenderer, { type: 'staking-disabled', error: false });
+  }
 }
 
 async function initializeStakingQRService(browser, event, data) {
+  console.log(data);
+  if (data.stakingDisable) return;
+  
   // Inicializar servicio de staking
   stakingService = new Staking();
   await stakingService.initialize(browser);

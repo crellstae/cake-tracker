@@ -11,6 +11,7 @@ const contract = {
 const tokens = {
   CAKE: '0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82',
   BUSD: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
+  USDT: '0x55d398326f99059ff775485246999027b3197955',
 };
 
 const router = new ethers.Contract(
@@ -39,7 +40,7 @@ class SwapRouter {
     setInterval(async () => {
       this.fiat = await fiat.value;
       console.log(`[${new Date().toLocaleString()}] Actualización de tarifa FIAT.`);
-    }, 86400000)
+    }, 21600000)
   }
 
   async setCakeInvestment(value) {
@@ -48,6 +49,16 @@ class SwapRouter {
 
   async setStableInvestment(value) {
     this.stableInvestment = value;
+  }
+
+  async setBUSD() {
+    console.log(`[${new Date().toLocaleString()}] Seleccionando BUSD.`);
+    this.stableToken = tokens.BUSD;
+  }
+
+  async setUSDT() {
+    console.log(`[${new Date().toLocaleString()}] Seleccionando USDT.`);
+    this.stableToken = tokens.USDT;
   }
 
   async getProfit(callback) {
@@ -122,21 +133,21 @@ class SwapRouter {
   }
 
   async getCakeToStable(value) {
-    const amounts = await router.getAmountsOut(ethers.utils.parseUnits(value.toString(), 18), [tokens.CAKE, tokens.BUSD]);
+    const amounts = await router.getAmountsOut(ethers.utils.parseUnits(value.toString(), 18), [tokens.CAKE, this.stableToken]);
     const amount = amounts[1].toString()/1e18;
     
     return amount;
   }
 
   async getCakeToStableRate() {
-    const amounts = await router.getAmountsOut(ethers.utils.parseUnits('1', 18), [tokens.CAKE, tokens.BUSD]);
+    const amounts = await router.getAmountsOut(ethers.utils.parseUnits('1', 18), [tokens.CAKE, this.stableToken]);
     const amount = amounts[1].toString()/1e18;
     
     return amount;
   }
 
   async getStableToCake(value) {
-    const amounts = await router.getAmountsOut(ethers.utils.parseUnits(value.toString(), 18), [tokens.BUSD, tokens.CAKE]);
+    const amounts = await router.getAmountsOut(ethers.utils.parseUnits(value.toString(), 18), [this.stableToken, tokens.CAKE]);
     const amount = amounts[1].toString()/1e18;
 
     return amount;

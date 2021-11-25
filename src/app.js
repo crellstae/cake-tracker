@@ -3,32 +3,52 @@ const appScreenshot = require('./util/screenshot');
 const utils = require('./util/utils');
 const formatter = require('./platform/util/formatter');
 
-let currentSellCurrency = 'BUSD';
+let currentStableToken = 'BUSD';
+let currentStakingDisable = false;
 let globalCakeStaked = 0.00;
 let globalFiatProfit = 0.00;
-let globalStableRate = 0.00;
 let globalFiatStaking = 0.00;
 let globalFiatTotalProfit = 0.00;
+let stakingModalAlreadyHidden = false;
 
 window.addEventListener('DOMContentLoaded', () => {
   attachStartButton();
   attachStopButton();
   attachDetailButton();
   attachCloseModal();
-  attachOnChangeSellCurrency(currentSellCurrency);
-  changeSellCurrency(currentSellCurrency);
+  attachOnChangeSellCurrency();
+  attachOnCheckedStakingDisable()
+  changeSellCurrency(currentStableToken);
 
   utils.setIdle('buy-status-image');
   utils.setIdle('sell-status-image');
   utils.setIdle('staking-status-image');
 });
 
-function attachOnChangeSellCurrency(currentSellCurrency) {
-  const sellCurrencySelect = document.getElementById('sellCurrency');
-  sellCurrencySelect.addEventListener('change', (e) => {
+function attachOnChangeSellCurrency() {
+  const input = document.getElementById('sellCurrency');
+
+  input.addEventListener('change', (e) => {
     const value = e.currentTarget.value;
-    currentSellCurrency = value;
-    changeSellCurrency(currentSellCurrency);
+    currentStableToken = value;
+    console.log(currentStableToken);
+    changeSellCurrency(currentStableToken);
+  });
+}
+
+function attachOnCheckedStakingDisable() {
+  const input = document.getElementById('staking-disable');
+  const investmentCakeInput = document.getElementById('investment-amount-cake');
+
+  input.addEventListener('change', (e) => {
+    const value = e.currentTarget.checked;
+    currentStakingDisable = value;
+
+    console.log(currentStakingDisable);
+
+    // Resetea el valor del cake invertido
+    investmentCakeInput.value = '0.00';
+    investmentCakeInput.readOnly = !currentStakingDisable;
   });
 }
 
@@ -54,11 +74,13 @@ function attachStartButton() {
 
     // Obtiene el monto de inversión
     const stableInvestment = getStableTokenAmount();
+
+    console.log(currentStakingDisable);
     
     ipc.send('create-start-process-main', { stableInvestment: stableInvestment });
     ipc.send('create-staking-qr-service-main', { });
     ipc.send('create-swap-router-service-main', { });
-    ipc.send('start-process-main', { stableInvestment: stableInvestment });
+    ipc.send('start-process-main', { stableInvestment: stableInvestment, stableToken: currentStableToken, stakingDisable: currentStakingDisable });
 
     ipc.on('profit-process-renderer', (event, result) => {
       console.log(result);
@@ -71,6 +93,14 @@ function attachStartButton() {
         setSellSwap(result.sell);
         setSellValue(result.sell.fiatRate, result.sell.stableRate);
         setStatusTag('sell', 'is-success');
+
+        if (currentStakingDisable && !stakingModalAlreadyHidden) {
+          utils.removeClass('qr-modal', 'is-active');
+          utils.setClass('qr-loading', 'hide-element');
+          utils.setClass('wallet-connect-qr', 'hide-element');
+
+          stakingModalAlreadyHidden = true;
+        }
       }
       
       // Establece los valores de compra
@@ -89,6 +119,12 @@ function attachStartButton() {
         stakingDataValidation(result);
         setStakingData(result);
         setStatusTag('staking', 'is-success');
+      }
+
+      if (result.type === 'staking-disabled' && currentStakingDisable) {
+        const cakeInvestmentAmount = getCakeTokenAmount();
+
+        ipc.send('swap-router-service-main', { cakeStaked: cakeInvestmentAmount });
       }
     });
 
@@ -115,6 +151,7 @@ function attachStartButton() {
 function attachStopButton() {
   const startButton = document.getElementById('stop-button');
   startButton.addEventListener('click', () => {
+    stakingModalAlreadyHidden = false;
     globalCakeStaked = 0;
     
     // Envia petición de desconexión y detiene procesos
@@ -166,12 +203,19 @@ function validateStartButton() {
     return false;
   }
 
+  if (currentStakingDisable) {
+    const cakeAmount = getCakeTokenAmount();
+    if (cakeAmount <= 0) {
+      alert('El monto de inversión de cake no es correcto.');
+      return false;
+    }
+  }
+
   return true;
 }
 
 function setData(data) {
   globalFiatProfit = data.fiatProfit;
-  globalStableRate = data.stableRate;
   globalFiatTotalProfit = getTotalFiatProfit();
 
   utils.replaceValueById('stable-profit', formatter.token.format(data.stableProfit));
@@ -217,7 +261,6 @@ function stakingDataValidation(data) {
     utils.setClass('wallet-connect-qr', 'hide-element');
 
     // Llama a los servicios de compra/venta
-    console.log('Llegó aquí');
     ipc.send('swap-router-service-main', { cakeStaked: cakeStaked.toString() });
   }
 }
@@ -257,12 +300,16 @@ function setBackgroundProfit(data) {
 
 function setBuyValue(fiat, rate) {
   utils.replaceTextById('buy-price', formatter.currency.format(fiat));
-  utils.replaceTextById('buy-rate', `${formatter.token.format(rate)} ${currentSellCurrency}`);
+  utils.replaceTextById('buy-rate', `${formatter.token.format(rate)} ${currentStableToken}`);
 }
 
 function setSellValue(fiat, rate) {
   utils.replaceTextById('sell-price', formatter.currency.format(fiat));
-  utils.replaceTextById('sell-rate', `${formatter.token.format(rate)} ${currentSellCurrency}`);
+  utils.replaceTextById('sell-rate', `${formatter.token.format(rate)} ${currentStableToken}`);
+
+  if (currentStakingDisable) {
+    globalCakeStaked = getCakeTokenAmount();
+  }
 }
 
 function setStatusTag(type, tag = '') {
@@ -285,7 +332,8 @@ function setStatusTag(type, tag = '') {
     case 'loading':
       utils.setLoading('buy-status-image');
       utils.setLoading('sell-status-image');
-      utils.setLoading('staking-status-image');
+
+      if (!currentStakingDisable) utils.setLoading('staking-status-image');
       break;
     case 'reset':
       utils.removeClass('buy-status', 'is-danger');
@@ -323,20 +371,25 @@ function getTotalFiatProfit() {
 }
 
 function setReadOnlyElements(isReadOnly) {
-  const investmentCakeInput = document.getElementById('investment-amount-cake');
   const investmentInput = document.getElementById('investment-amount');
   const sellCurrency = document.getElementById('sellCurrency');
+  const stakingDisable = document.getElementById('staking-disable');
 
-  investmentCakeInput.readOnly = isReadOnly;
   investmentInput.readOnly = isReadOnly;
   sellCurrency.disabled = isReadOnly;
+  stakingDisable.disabled = isReadOnly;
 }
 
-function changeSellCurrency(currentSellCurrency) {
-  utils.replaceText('token-sell', currentSellCurrency);
+function changeSellCurrency(currentStableToken) {
+  utils.replaceText('token-sell', currentStableToken);
 }
 
 function getStableTokenAmount() {
-  const investmentAmount = document.getElementById('investment-amount').value;
-  return investmentAmount;
+  const input = document.getElementById('investment-amount').value;
+  return input;
+}
+
+function getCakeTokenAmount() {
+  const input = document.getElementById('investment-amount-cake').value;
+  return input;
 }
