@@ -36,27 +36,23 @@ class Staking {
 
   async getProfit(callback, callbackInterval) {
     console.log(`[${new Date().toLocaleString()}] Obteniendo staking.`);
-
-    // const isLoadingInterval = setInterval(async () => {
-    //   const isLoading = await this.pageIsLoading();
-
-    //   console.log(isLoading);
-
-    //   if (!isLoading) clearInterval(isLoadingInterval);
-    // }, 2500);
+    const loadingSelector = 'sc-fyGvY fLibQH';
 
     // Establece solo tokens donde hay staking
     await this.clickOnStakedOnly();
 
     // Click en el detalle de todos los tokens disponibles
     await this.clickOnTokensEarnedDetail();
+
+    // Espera hasta que cargue los tokens
+    await this.page.waitForFunction(`Array.from(document.getElementsByClassName('${loadingSelector}')).length === 0`, { timeout: 60000 });
     
     // Obtiene los tokens acumulados
     this.interval = setInterval(async () => {
       try {
         const profitData = await this.getTokensEarnedData();
 
-        this.notification.trackStaking(profitData);
+        // this.notification.trackStaking(profitData);
 
         callbackInterval(profitData);
       } catch (err) {
@@ -68,19 +64,22 @@ class Staking {
   }
 
   async clickOnConnectWallet() {
-    const selector = 'sc-hKFxyN tSBKF';
+    const selector = 'nav';
 
     // Dispara evento click para conexión de la wallet
-    await this.page.waitForSelector(`button[class*='${selector}']`);
+    await this.page.waitForFunction(`document.getElementsByTagName('${selector}').length > 0`);
     await this.page.evaluate(x => {
-      const buttons = document.getElementsByClassName(x.selector);
-      const list = Array.from(buttons);
+      const nav = Array.from(document.getElementsByTagName(x.selector))[0];
 
-      if (list !== undefined && list.length > 0) {
-        // Filtra por el botón con el texto correcto
-        const connectWalletButton = list.filter(x => x.textContent === 'Connect Wallet')[0];
+      if (nav !== undefined) {
+        const buttons = Array.from(nav.querySelectorAll('button'));
 
-        if (connectWalletButton !== undefined) connectWalletButton.click();
+        if (buttons !== undefined && buttons.length > 0) {
+          // Filtra por el botón con el texto correcto
+          const connectWalletButton = buttons.find(q => q.textContent === 'Connect Wallet');
+
+          if (connectWalletButton !== undefined) connectWalletButton.click();
+        }
       }
     }, { selector: selector });
   }
@@ -95,37 +94,37 @@ class Staking {
   }
 
   async clickOnStakedOnly() {
-    const selector = '.kjNUQZ';
-
     // Establece solo tokens donde hay staking
-    await this.page.waitForSelector(selector);
-    let handle = await this.page.$(selector);
-    await handle.evaluate(x => x.click());
+    await this.page.waitForFunction(`document.getElementsByTagName('input').length > 0`);
+    await this.page.evaluate(x => {
+      const inputs = Array.from(document.getElementsByTagName('input'));
+
+      if (inputs !== undefined && inputs.length > 0) {
+        const stakedOnly = inputs.find(q => q.type === 'checkbox');
+
+        if (stakedOnly !== undefined) stakedOnly.click();
+      }
+    });
   }
 
   async clickOnTokensEarnedDetail() {
-    const selector = 'sc-gggoXN byiTzm';
-    const detailSelector = '.iiWEXc';
-    const roleSelector = 'row';
+    const selector = 'pools-table';
 
     // Obtiene las filas de tokens que tenemos disponibles
-    await this.page.waitForSelector(`div[class*='${selector}']`);
+    await this.page.waitForSelector('div[role=row]');
     await this.page.evaluate(x => {
-      let elements = document.getElementsByClassName(x.selector);
-      let list = Array.from(elements);
-      let result = [];
+      const table = document.getElementById(x.selector);
+      const rows = Array.from(table.querySelectorAll('div[role=row]'));
 
-      if (list !== undefined && list.length > 0) {
-        result.push(...list.filter(o => o.getAttribute('role')  === x.roleSelector));
-      }
-
-      if (result.length > 0) {
-        for (let element of result) {
-          const detail = element.querySelector(x.detailSelector);
-          if (detail !== undefined && detail.textContent === 'Details') detail.click();
+      if (rows.length > 0) {
+        for (let element of rows) {
+          const cells = Array.from(element.querySelectorAll('div[role=cell]'));
+          const detail = cells.find(q => q.textContent === 'Details');
+          
+          if (detail !== undefined) detail.click();
         }
       }
-    }, { selector: selector, detailSelector: detailSelector, roleSelector: roleSelector });
+    }, { selector: selector });
   }
 
   async takeQRScreenshot() {
@@ -139,58 +138,64 @@ class Staking {
   }
 
   async getTokensEarnedData() {
-    const selector = 'sc-hmvkKb bFTnFy';
-    const logoSelector = 'sc-gXfVKN jKLUHq';
-    const tokenInfoSelector = '.sc-kBqmDu.LzWAL';
-    const tokenLogoSelector = '.sc-gXfVKN.jKLUHq'
-    const tokenNameSelector = '.sc-gtsrHT.gXQgo';
-    const tokenEarnedSelector = '.sc-gtsrHT.bHLiLT';
-    const tokenEarnedUSDSelector = '.sc-gtsrHT.MYPrH';
-    const tokenAprSelector = '.sc-gtsrHT.gMTdjB';
-    const cakeStakedSelector = '.sc-gtsrHT.bHLiLT';
+    const selector = 'pools-table';
 
     // Obtiene las filas de tokens que tenemos disponibles
-    await this.page.waitForSelector(`div[class*='${selector}']`);
-    await this.page.waitForSelector(`img[class*='${logoSelector}']`);
+    await this.page.waitForSelector(`#${selector}`);
     const profitData = await this.page.evaluate(x => {
-      let elements = document.getElementsByClassName(x.selector);
-      let tokens = Array.from(elements);
+      const table = document.getElementById(x.selector);
+      const tokens = Array.from(table.querySelectorAll('div[role=row]'));
       let profitDataList = [];
-
+      
       if (tokens !== undefined && tokens.length > 0) {
-        for (let token of tokens) {
-          const tokenInfo = token.querySelectorAll(x.tokenInfoSelector);
-          const tokenHeader = token.previousSibling;
-          let tokenProfit = { };
+        for (const token of tokens) {
+          const tokenProfit = { };
+          const cells = token.querySelectorAll('div[role=cell]');
 
-          // Si tiene mas de dos divs esta correcto
-          if (tokenInfo.length >= 1) {
-            // Obtiene los elementos necesarios
-            const name = tokenInfo[0].querySelector(x.tokenNameSelector);
-            const earned = tokenInfo[0].querySelector(x.tokenEarnedSelector);
-            const earnedUsd = tokenInfo[0].querySelector(x.tokenEarnedUSDSelector);
-            const cakeStaked = tokenInfo[1].querySelector(x.cakeStakedSelector);
+          if (cells === undefined || cells.length <= 0) continue;
 
-            // Asigna el texto de los elementos
-            if (name !== undefined) tokenProfit.tokenName = name.textContent.trim();
-            if (earned !== undefined) tokenProfit.tokenProfit = earned.textContent.trim();
-            if (earnedUsd !== undefined) tokenProfit.tokenUSDProfit = earnedUsd.textContent.trim();
-            if (cakeStaked !== undefined) tokenProfit.cakeStaked = cakeStaked.textContent.trim();
-            
-            // Realiza pequeños cálculos
-            tokenProfit.tokenUSDProfit = tokenProfit.tokenUSDProfit.replace('~', '').replace('USD', '').trim();
-            tokenProfit.fiatProfit = tokenProfit.tokenUSDProfit * x.fiat;
+          // Se obtiene logo
+          if (cells[0] !== undefined) {
+            const images = cells[0].querySelectorAll('img');
+
+            if (images !== undefined && images.length > 0) tokenProfit.logo = images[0].src;
           }
 
-          // Se obtiene el logo
-          if (tokenHeader !== undefined) {
-            const tokenLogo = tokenHeader.querySelector(x.tokenLogoSelector);
-            if (tokenLogo !== undefined && tokenLogo !== null) tokenProfit.logo = tokenLogo.src;
+          // Se obtiene nombre
+          if (cells[1] !== undefined) {
+            const name = cells[1].querySelector('div[color=textSubtle]');
 
-            // Se optibe el apr
-            const apr = tokenHeader.querySelector(x.tokenAprSelector);
+            if (name !== undefined) tokenProfit.tokenName = name.textContent.replace('Earned', '').trim();
+          }
+
+          // Se obtiene lo ganado
+          if (cells[1] !== undefined) {
+            const earned = cells[1].querySelector('div[color=primary]');
+            const usd = cells[1].querySelectorAll('div[color=textSubtle]')[1];
+
+            if (earned !== undefined) tokenProfit.tokenProfit = earned.textContent.trim();
+            if (usd !== undefined) tokenProfit.tokenUSDProfit = usd.textContent.replace('~', '').replace('USD', '').trim();
+          }
+
+          // Se obtiene el apr
+          if (cells[2] !== undefined) {
+            const apr = cells[2].querySelector('div[color=text]');
+
             if (apr !== undefined) tokenProfit.apr = apr.textContent.trim();
           }
+
+          // Se obtiene el staked
+          if (token.nextElementSibling !== undefined) {
+            const detail = token.nextElementSibling;
+            const info = detail.querySelectorAll('div[color=text]');
+
+            if (info !== undefined && info.length > 0) {
+              if (info[3] !== undefined) tokenProfit.cakeStaked = info[3].textContent.trim();
+            }
+          }
+
+          // Cálculo de USD * Fiat
+          tokenProfit.fiatProfit = tokenProfit.tokenUSDProfit * x.fiat;
 
           profitDataList.push(tokenProfit);
         }
@@ -199,37 +204,10 @@ class Staking {
       return profitDataList;
     }, { 
       selector: selector,
-      tokenInfoSelector: tokenInfoSelector,
-      tokenLogoSelector: tokenLogoSelector,
-      tokenNameSelector: tokenNameSelector,
-      tokenEarnedSelector: tokenEarnedSelector,
-      tokenEarnedUSDSelector: tokenEarnedUSDSelector,
-      tokenAprSelector: tokenAprSelector,
-      cakeStakedSelector: cakeStakedSelector,
       fiat: this.fiat
     });
 
     return profitData;
-  }
-
-  async pageIsLoading(isLoading) {
-    const selector = 'sc-fyGvY fLibQH';
-    let result = false;
-
-    if (isLoading === undefined || isLoading) {
-      // Dispara evento click para conexión de la wallet
-      await this.page.waitForSelector(`div[class*='${selector}']`);
-      result = await this.page.evaluate(x => {
-        const loader = document.getElementsByClassName(x.selector);
-        console.log(loader);
-
-        if (loader !== undefined || loader !== null) return true;
-
-        return false;
-      }, { selector: selector });
-    }
-
-    return result;
   }
 
   async disconnect() {
