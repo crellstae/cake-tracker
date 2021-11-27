@@ -1,15 +1,21 @@
 {
   "name": "cake-tracker",
   "version": "1.0.0",
-  "description": "",
+  "description": "Cake tracker is an app to visualize and calculate your staking profit on PancakeSwap.",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build-linux": "./node_modules/electron-packager/bin/electron-packager.js ../cake-tracker/ --out=dist/linux_x64 --platform=linux --arch=x64 --overwrite",
+    "build-win32": "./node_modules/electron-packager/bin/electron-packager.js ../cake-tracker/ --out=dist/win_32 --platform=win32 --arch=x64 --overwrite",
+    "generate-deb": "./node_modules/electron-installer-debian/src/cli.js --src dist/linux_x64/cake-tracker-linux-x64/ --dest dist/installers --arch amd64",
+    "generate-exe": "./node_modules/electron-installer-debian/src/cli.js --src dist/win32/cake-tracker-win32/ --dest dist/installers --arch amd64"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^15.3.1"
+    "electron": "~15.3.1",
+    "electron-installer-debian": "~3.1.0",
+    "electron-packager": "~15.4.0"
   },
   "dependencies": {
     "bulma": "~0.9.3",
