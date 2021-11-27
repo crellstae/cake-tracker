@@ -7,9 +7,7 @@ class Staking {
   page = undefined;
   interval = undefined;
 
-  constructor() {
-    this.notification = new Notification('staking');
-  }
+  constructor() { }
 
   async initialize(browser) {
     console.log(`[${new Date().toLocaleString()}] Inicializando componente de Staking.`);
@@ -51,8 +49,6 @@ class Staking {
     this.interval = setInterval(async () => {
       try {
         const profitData = await this.getTokensEarnedData();
-
-        // this.notification.trackStaking(profitData);
 
         callbackInterval(profitData);
       } catch (err) {
@@ -151,6 +147,7 @@ class Staking {
         for (const token of tokens) {
           const tokenProfit = { };
           const cells = token.querySelectorAll('div[role=cell]');
+          let autoCake = false;
 
           if (cells === undefined || cells.length <= 0) continue;
 
@@ -165,7 +162,17 @@ class Staking {
           if (cells[1] !== undefined) {
             const name = cells[1].querySelector('div[color=textSubtle]');
 
-            if (name !== undefined) tokenProfit.tokenName = name.textContent.replace('Earned', '').trim();
+            // Detectar si es Auto Cake Staking
+            if (name.textContent.includes("Recent")) {
+              console.log(`[${new Date().toLocaleString()}] Detectado pool AutoCake.`);
+              autoCake = true;
+            }
+
+            if (autoCake) {
+              tokenProfit.tokenName = name.textContent.replace('Recent', '').replace('profit', '').trim();
+            } else {
+              if (name !== undefined) tokenProfit.tokenName = name.textContent.replace('Earned', '').trim();
+            }
           }
 
           // Se obtiene lo ganado
@@ -187,10 +194,19 @@ class Staking {
           // Se obtiene el staked
           if (token.nextElementSibling !== undefined) {
             const detail = token.nextElementSibling;
-            const info = detail.querySelectorAll('div[color=text]');
 
-            if (info !== undefined && info.length > 0) {
-              if (info[3] !== undefined) tokenProfit.cakeStaked = info[3].textContent.trim();
+            if (autoCake) {
+              const info = detail.querySelectorAll('div[color=textSubtle]');
+
+              if (info[1] !== undefined) {
+                tokenProfit.cakeStaked = info[1].previousElementSibling.textContent.trim();
+              }
+            } else {
+              const info = detail.querySelectorAll('div[color=text]');
+
+              if (info !== undefined && info.length > 0) {
+                if (info[3] !== undefined) tokenProfit.cakeStaked = info[3].textContent.trim();
+              }
             }
           }
 

@@ -24,8 +24,9 @@ class Notification {
       if (this.type === 'alert-buy') {
         notifyData.message += this.data.telegram.templates.alertBuy.title;
         notifyData.message += this.data.telegram.templates.alertBuy.message.toString().replaceAll(',', '')
+          .replace('#StableToken#', profitData.stableTokenName)
           .replace('#FiatPrecio#', formatter.token.format(profitData.fiatRate))
-          .replace('#StablePrice#', formatter.token.format(profitData.stableRate));
+          .replace('#StablePrecio#', formatter.token.format(profitData.stableRate));
 
         this.send(async () => {
           this.telegram.sendMessage(notifyData);
@@ -35,11 +36,12 @@ class Notification {
       if (this.type === 'alert-sell') {
         notifyData.message += this.data.telegram.templates.alertSell.title;
         notifyData.message += this.data.telegram.templates.alertSell.message.toString().replaceAll(',', '')
+          .replace('#StableToken#', profitData.stableTokenName)
           .replace('#FiatPrecio#', formatter.token.format(profitData.fiatRate))
-          .replace('#StablePrice#', formatter.token.format(profitData.stableRate));
+          .replace('#StablePrecio#', formatter.token.format(profitData.stableRate));
 
         this.send(async () => {
-          this.telegram.sendMessage(notifyData);
+          await this.telegram.sendMessage(notifyData);
         });
       }
     }
@@ -65,7 +67,41 @@ class Notification {
       .replace('#fiatProfitTotal#', formatter.token.format(fiatProfitTotal));
 
     this.send(async () => {
-      this.telegram.sendMessage(notifyData);
+      await this.telegram.sendMessage(notifyData);
+    });
+  }
+
+  async trackInfo() {
+    const notifyData = { message: '' };
+
+    notifyData.message += this.data.telegram.templates.info.title;
+    notifyData.message += this.data.telegram.templates.staking.title;
+
+    await this.send(async () => {
+      await this.getInfo(async (data) => {
+        const fiatStakingTotal = data.stakedTokens.reduce((s,o) => { return s+o.fiatProfit }, 0);
+  
+        for (const token of data.stakedTokens) {
+          notifyData.message += this.data.telegram.templates.staking.message.toString().replaceAll(',', '')
+            .replace('#TokenName#', token.tokenName)
+            .replace('#TokenProfit#', formatter.token.format(token.tokenProfit))
+            .replace('#FiatProfit#', formatter.token.format(token.fiatProfit))
+            .replace('#TokenAPR#', token.apr)
+            .replace('#CakeStaked#', formatter.token.format(token.cakeStaked));
+        }
+  
+        notifyData.message += this.data.telegram.templates.info.message.toString().replaceAll(',', '')
+          .replaceAll('#ProfitStatus#', data.profitData.profitStatus)
+          .replace('#StableToken#', data.profitData.stableTokenName)
+          .replace('#StableTokenProfit#', formatter.token.format(data.profitData.stableTokenProfit))
+          .replace('#FiatProfit#', formatter.token.format(data.profitData.fiatProfit))
+          .replace('#FiatStakingTotal#', formatter.token.format(fiatStakingTotal))
+          .replace('#FiatProfitTotal#', formatter.token.format(data.profitData.fiatProfitTotal));
+  
+        notifyData.photo = data.screenshot;
+  
+        await this.telegram.sendPhoto(notifyData);
+      });
     });
   }
 
@@ -77,35 +113,25 @@ class Notification {
     if (this.validationByType(sellStableValue, stableProfit)) {
       if (this.type === 'stop-loss') {
         notifyData.message += this.data.telegram.templates.stopLoss.title;
+        notifyData.message += this.data.telegram.templates.stopLoss.message.toString().replaceAll(',', '')
+          .replace('#StopLoss#', this.data.main.stopLoss)
+          .replace('#MXNTarifa#', formatter.token.format(fiatRate))
+          .replace('#MXNPerdidas#', formatter.token.format(fiatProfit));
 
         this.send(async () => {
-          await this.getScreenshot((screenshot) => {
-            notifyData.message += this.data.telegram.templates.stopLoss.message.toString().replaceAll(',', '')
-              .replace('#StopLoss#', this.data.main.stopLoss)
-              .replace('#MXNTarifa#', formatter.token.format(fiatRate))
-              .replace('#MXNPerdidas#', formatter.token.format(fiatProfit));
-  
-            notifyData.photo = screenshot;
-  
-            this.telegram.sendPhoto(notifyData);
-          });
+          await this.telegram.sendMessage(notifyData);
         });
       }
 
       if (this.type === 'take-profit') {
         notifyData.message += this.data.telegram.templates.takeProfit.title;
+        notifyData.message += this.data.telegram.templates.takeProfit.message.toString().replaceAll(',', '')
+          .replace('#TakeProfit#', this.data.main.takeProfit)
+          .replace('#MXNTarifa#', formatter.token.format(fiatRate))
+          .replace('#MXNGanancias#', formatter.token.format(fiatProfit));
 
         this.send(async () => {
-          await this.getScreenshot((screenshot) => {
-            notifyData.message += this.data.telegram.templates.takeProfit.message.toString().replaceAll(',', '')
-              .replace('#TakeProfit#', this.data.main.takeProfit)
-              .replace('#MXNTarifa#', formatter.token.format(fiatRate))
-              .replace('#MXNGanancias#', formatter.token.format(fiatProfit));
-  
-            notifyData.photo = screenshot;
-
-            this.telegram.sendPhoto(notifyData);
-          });
+          await this.telegram.sendMessage(notifyData);
         });
       }
     }
@@ -168,14 +194,14 @@ class Notification {
     if (this.type === 'take-profit') return investment+type;
   }
 
-  async getScreenshot(callback) {
+  async getInfo(callback) {
     const win = config.getWin();
-    win.webContents.send('screenshot-service-renderer', {});
+    win.webContents.send('info-service-renderer', {});
 
-    ipc.once('screenshot-service-main', async (event, args) => {
+    ipc.once('info-service-main', async (event, args) => {
       if (args === undefined) return undefined;
 
-      console.log(`[${new Date().toLocaleString()}] Se obtiene screenshot.`);
+      console.log(`[${new Date().toLocaleString()}] Se obtiene info y screenshot.`);
 
       await callback(args);
     });

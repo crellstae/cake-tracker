@@ -5,7 +5,10 @@ const formatter = require('./platform/util/formatter');
 
 let currentStableToken = 'BUSD';
 let currentStakingDisable = false;
+let globalStakedTokens = [];
+let globalProfitStatus = 'Ganancias';
 let globalCakeStaked = 0.00;
+let globalStableProfit = 0.00;
 let globalFiatProfit = 0.00;
 let globalFiatStaking = 0.00;
 let globalFiatTotalProfit = 0.00;
@@ -95,10 +98,7 @@ function attachStartButton() {
         setStatusTag('sell', 'is-success');
 
         if (currentStakingDisable && !stakingModalAlreadyHidden) {
-          utils.removeClass('qr-modal', 'is-active');
-          utils.setClass('qr-loading', 'hide-element');
-          utils.setClass('wallet-connect-qr', 'hide-element');
-
+          hideQRModal();
           stakingModalAlreadyHidden = true;
         }
       }
@@ -115,6 +115,8 @@ function attachStartButton() {
       // Establece los valores de staking
       if (result.type === 'staking') {
         if (result.error) return setStatusTag('staking', 'is-danger');
+
+        globalStakedTokens = result.tokens;
 
         stakingDataValidation(result);
         setStakingData(result);
@@ -140,9 +142,25 @@ function attachStartButton() {
       }
     });
 
-    ipc.on('screenshot-service-renderer', (event, result) => {
+    ipc.on('info-service-renderer', (event, result) => {
       appScreenshot((base64Image) => {
-        ipc.send('screenshot-service-main', base64Image.replace('data:image/jpeg;base64,', ''));
+        if (globalStakedTokens.length <= 0 && !currentStakingDisable) return;
+
+        const data = {
+          stakedTokens: !currentStakingDisable ? globalStakedTokens : [],
+          profitData: {
+            profitStatus: globalProfitStatus,
+            stableTokenName: currentStableToken,
+            stableTokenProfit: globalStableProfit,
+            fiatProfit: globalFiatProfit,
+            fiatProfitTotal: globalFiatTotalProfit
+          },
+          screenshot: base64Image.replace('data:image/jpeg;base64,', '')
+        }
+
+        console.log(data);
+
+        ipc.send('info-service-main', data);
       });
     });
   });
@@ -215,6 +233,7 @@ function validateStartButton() {
 }
 
 function setData(data) {
+  globalStableProfit = data.stableProfit;
   globalFiatProfit = data.fiatProfit;
   globalFiatTotalProfit = getTotalFiatProfit();
 
@@ -267,10 +286,14 @@ function stakingDataValidation(data) {
 
 function setBackgroundProfit(data) {
   if (data.stableProfit >= 0) {
+    globalProfitStatus = 'Ganancias';
+
     utils.replaceTextById('stable-profit-text-type', 'Ganancias');
     utils.setClass('stable-profit', 'input-back-green');
   }
   else {
+    globalProfitStatus = 'Perdidas';
+
     utils.replaceTextById('stable-profit-text-type', 'Perdidas');
     utils.setClass('stable-profit', 'input-back-red');
   }
@@ -328,6 +351,7 @@ function setStatusTag(type, tag = '') {
       utils.setClass('staking-status', tag);
       utils.removeImage('staking-status-image');
       setStatusImage(type, tag);
+      hideQRModal();
       break;
     case 'loading':
       utils.setLoading('buy-status-image');
@@ -382,6 +406,12 @@ function setReadOnlyElements(isReadOnly) {
 
 function changeSellCurrency(currentStableToken) {
   utils.replaceText('token-sell', currentStableToken);
+}
+
+function hideQRModal() {
+  utils.removeClass('qr-modal', 'is-active');
+  utils.setClass('qr-loading', 'hide-element');
+  utils.setClass('wallet-connect-qr', 'hide-element');
 }
 
 function getStableTokenAmount() {

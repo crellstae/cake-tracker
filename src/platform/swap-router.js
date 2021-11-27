@@ -32,6 +32,7 @@ class SwapRouter {
     this.takeProfit = new Notification('take-profit');
     this.alertBuy = new Notification('alert-buy');
     this.alertSell = new Notification('alert-sell');
+    this.notification = new Notification('info');
   }
 
   async initialize() {
@@ -53,16 +54,21 @@ class SwapRouter {
 
   async setBUSD() {
     console.log(`[${new Date().toLocaleString()}] Seleccionando BUSD.`);
+    
     this.stableToken = tokens.BUSD;
+    this.stableTokenName = 'BUSD';
   }
 
   async setUSDT() {
     console.log(`[${new Date().toLocaleString()}] Seleccionando USDT.`);
+
     this.stableToken = tokens.USDT;
+    this.stableTokenName = 'USDT';
   }
 
   async getProfit(callback) {
       console.log(`[${new Date().toLocaleString()}] Obteniendo datos de Pancakeswap Router.`);
+
       this.interval = setInterval(async () => {
       try {
         const sellRate = await this.getCakeToStableRate();
@@ -79,15 +85,22 @@ class SwapRouter {
 
         callback(result);
 
-        // Notificación para stop-loss y take-profit en ventas
-        await this.stopLoss.trackProfit(result.sell.fiatRate, result.sell.fiatProfit, this.stableInvestment, result.sell.exchangedAmount);
-        await this.takeProfit.trackProfit(result.sell.fiatRate, result.sell.fiatProfit, this.stableInvestment, result.sell.exchangedAmount);
+        try {
+          // Notificaciones unificadas
+          await this.notification.trackInfo();
 
-        // Alerta de venta
-        await this.alertSell.trackAlert({ stableRate: result.sell.stableRate, fiatRate: result.sell.fiatRate });
+          // Notificación para stop-loss y take-profit en ventas
+          await this.stopLoss.trackProfit(result.sell.fiatRate, result.sell.fiatProfit, this.stableInvestment, result.sell.exchangedAmount);
+          await this.takeProfit.trackProfit(result.sell.fiatRate, result.sell.fiatProfit, this.stableInvestment, result.sell.exchangedAmount);
 
-         // Alerta de compra
-         await this.alertBuy.trackAlert({ stableRate: result.sell.stableRate, fiatRate: result.sell.fiatRate });
+          // Alerta de venta
+          await this.alertSell.trackAlert({ stableTokenName: this.stableTokenName, stableRate: result.sell.stableRate, fiatRate: result.sell.fiatRate });
+
+          // Alerta de compra
+          await this.alertBuy.trackAlert({ stableTokenName: this.stableTokenName, stableRate: result.sell.stableRate, fiatRate: result.sell.fiatRate });
+        } catch (err) {
+          console.log(`[${new Date().toLocaleString()}] Swap-Router notificaciones error: ${err}`);
+        }
       } catch (err) {
         console.log(`[${new Date().toLocaleString()}] Swap-Router error: ${err}`);
       }

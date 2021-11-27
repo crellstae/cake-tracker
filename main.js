@@ -89,7 +89,7 @@ async function startProccess() {
       await initializeSwapRouterService(event, data)
       await initializeStakingQRService(browser, event, data);
     } catch (err) {
-      console.log(err);
+      console.log(`[${new Date().toLocaleString()}] ${err}`);
     }
   });
 }
@@ -124,7 +124,7 @@ async function startStakingProfitService() {
         event.reply(profitProcessRenderer, { type: 'staking', error: false, tokens: [...result] });
       });
     } catch (err) {
-      console.error(err);
+      console.log(`[${new Date().toLocaleString()}] ${err}`);
       event.reply(profitProcessRenderer, { type: 'staking', error: true });
     }
   });
@@ -145,7 +145,6 @@ async function initializeSwapRouterService(event, data) {
 }
 
 async function initializeStakingQRService(browser, event, data) {
-  console.log(data);
   if (data.stakingDisable) return;
   
   // Inicializar servicio de staking
@@ -158,7 +157,7 @@ async function initializeStakingQRService(browser, event, data) {
     });
 
   } catch (err) {
-    console.error(err);
+    console.log(`[${new Date().toLocaleString()}] ${err}`);
     event.reply(profitProcessRenderer, { type: 'staking', error: true });
   }
 }
