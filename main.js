@@ -32,7 +32,6 @@ function createWindow () {
   win.loadFile('index.html');
   win.setIcon(path.join(__dirname + '/content/icon.png'));
   win.setMenu(null);
-  win.webContents.openDevTools();
 
   // Obtiene la configuración
   configData = config.data();
