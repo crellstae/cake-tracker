@@ -7,7 +7,7 @@ let win = undefined;
 const data = {
   json: () => {
     if (configJson === undefined) {
-      fs.readFile(path.join('./config.json'), 'utf8' , (err, json) => {
+      fs.readFile(path.join(__dirname + '../../../../config.json'), 'utf8' , (err, json) => {
         if (err) {
           console.error(err);
           return;
