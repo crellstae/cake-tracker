@@ -8,6 +8,7 @@ const contract = {
   factory: '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73', // PancakeSwap V2 factory
   router: '0x10ED43C718714eb63d5aA57B78B54704E256024E', // PancakeSwap V2 router
 };
+
 const tokens = {
   CAKE: '0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82',
   BUSD: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
@@ -32,7 +33,7 @@ class SwapRouter {
     this.takeProfit = new Notification('take-profit');
     this.alertBuy = new Notification('alert-buy');
     this.alertSell = new Notification('alert-sell');
-    this.notification = new Notification('info');
+    this.notification = new Notification('info', 21600);
   }
 
   async initialize() {
@@ -67,9 +68,9 @@ class SwapRouter {
   }
 
   async getProfit(callback) {
-      console.log(`[${new Date().toLocaleString()}] Obteniendo datos de Pancakeswap Router.`);
+    console.log(`[${new Date().toLocaleString()}] Obteniendo datos de Pancakeswap Router.`);
 
-      this.interval = setInterval(async () => {
+    this.interval = setInterval(async () => {
       try {
         const sellRate = await this.getCakeToStableRate();
         const buyRate = await this.getStableToCakeRate(sellRate);
@@ -122,7 +123,7 @@ class SwapRouter {
       fiatProfit: fiatProfit,
       investment: this.cakeInvestment,
       exchangedAmount: sellSwapAmount,
-      fiatExchangeAmount: fiatExchanged
+      fiatExchangedAmount: fiatExchanged
     }
 
     return data;
@@ -139,7 +140,7 @@ class SwapRouter {
       fiateValue: parseFloat(this.fiat),
       investment: this.stableInvestment,
       exchangedAmount: buySwapAmount,
-      fiatExchangeAmount: fiatExchanged
+      fiatExchangedAmount: fiatExchanged
     }
 
     return data;

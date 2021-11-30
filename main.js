@@ -40,7 +40,7 @@ function createWindow () {
 }
 
 async function getBrowser() {
-  browser = await puppeteer.launch({ headless: true, slowMo: 100, devtools: false });
+  browser = await puppeteer.launch({ headless: false, slowMo: 100, devtools: true });
   return browser;
 }
 
@@ -103,6 +103,7 @@ async function startSwapRouterService() {
 
     try {
       await swapRouterService.getProfit((result) => {
+        event.reply(stakingQRServiceRenderer, { hide: true });
         event.reply(profitProcessRenderer, { error: false, ...result });
       });
     } catch (err) {
@@ -121,9 +122,12 @@ async function startStakingProfitService() {
     try {
       await stakingService.getProfit((result) => {
         event.reply(profitProcessRenderer, { type: 'staking', error: false, tokens: [...result] });
+      }, () => {
+        event.reply(stakingQRServiceRenderer, { loading: true });
       });
     } catch (err) {
       console.log(`[${new Date().toLocaleString()}] ${err}`);
+      event.reply(stakingQRServiceRenderer, { hide: true });
       event.reply(profitProcessRenderer, { type: 'staking', error: true });
     }
   });
