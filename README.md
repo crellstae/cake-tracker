@@ -6,53 +6,65 @@ Add this file in the root path `config.json` with this content:
 ```
 {
   "main": {
-    "preferredNotification": "telegram",
     "stopLoss": 3.5,
     "takeProfit": 3.5,
     "alerts": {
       "buyPriceEqualOrMinorThan": 370.0,
       "sellPriceEqualOrMayorThan": 400.0
-    }
-  },
-  "mailer": {
-    "from": "",
-    "auth": {
-      "user": "",
-      "pass": ""
     },
-    "security": {
-      "host": "",
-      "ssl": false,
-      "port": 587
-    }
-  },
-  "mail": {
-    "recipients": "urabemoon@gmail.com",
-    "templates": {
-      "stopLoss": {
-        "subject": "Notificación de Stop-Loss: $#FiatPerdidas#",
-        "body": "<p>Stop-Loss: #StopLoss#%<br />MXN Tarifa $: #MXNTarifa#<br />MXN Perdidas $: #FiatPerdidas#</p>"
-      },
-      "takeProfit": {
-        "subject": "Notificación de Take-Profit: $#FiatGanancias#",
-        "body": "<p>Take-Profit: #TakeProfit#%<br />MXN Tarifa $: #MXNTarifa#<br />MXN Gananacias $: #FiatGanancias#</p>"
-      },
-      "staking": {
-        "subject": "Notificación de Staking: $#FiatGanancias#"
-      },
-      "alertBuy": {
-        "subject": "Alerta de Precio de Compra: $#FiatPrecio#",
-        "body": "<p>MXN Precio $: #FiatPrecio#<br />Stable-Token Precio: #StablePrice#</p>"
-      },
-      "alertSell": {
-        "subject": "Alerta de Precio de Venta: $#FiatPrecio#",
-        "body": "<p>MXN Precio $: #FiatPrecio#<br />Stable-Token: #StablePrice#<br />"
-      }
+    "notifications": {
+      "stopLoss": true,
+      "takeProfit": true,
+      "staking": true,
+      "alerts": true
     }
   },
   "telegram": {
     "token": "",
-    "channel": ""
+    "channel": "",
+    "templates": {
+      "stopLoss": {
+        "title": "<strong>STOP-LOSS</strong>\r\n\r\n",
+        "message": [
+          "<strong>Porcentaje</strong>: #StopLoss#\r\n",
+          "<strong>MXN Tarifa</strong>: #MXNTarifa#\r\n",
+          "<strong>MXN Perdidas</strong> $: #MXNPerdidas#"
+        ]
+      },
+      "takeProfit": {
+        "title": "<strong>TAKE-PROFIT</strong>\r\n\r\n",
+        "message": [
+          "<strong>Porcentaje</strong>: #TakeProfit#\r\n",
+          "<strong>MXN Tarifa</strong>: #MXNTarifa#\r\n",
+          "<strong>MXN Perdidas</strong> $: #MXNGanancias#"
+        ]
+      },
+      "staking": {
+        "title": "<strong>STAKING</strong>\r\n\r\n",
+        "message": [
+          "<strong>Token</strong>: #TokenName#\r\n",
+          "<strong>Ganado</strong>: #TokenProfit#\r\n",
+          "<strong>USD</strong> $: #USDProfit#\r\n",
+          "<strong>MXN</strong> $: #FiatProfit#\r\n",
+          "<strong>APR</strong>: #TokenAPR#\r\n",
+          "<strong>Staked</strong>: #CakeStaked#\r\n\r\n"
+        ]
+      },
+      "alertBuy": {
+        "title": "<strong>COMPRA</strong>\r\n\r\n",
+        "message": [
+          "<strong>MXN Precio</strong> $: #FiatPrecio#\r\n",
+          "<strong>Stable-Token Precio</strong> $: #StablePrice#"
+        ]
+      },
+      "alertSell": {
+        "title": "<strong>VENTA</strong>\r\n\r\n",
+        "message": [
+          "<strong>MXN Precio</strong> $: #FiatPrecio#\r\n",
+          "<strong>Stable-Token Precio</strong> $: #StablePrice#"
+        ]
+      }
+    }
   }
 }
 ```
