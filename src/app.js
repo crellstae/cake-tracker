@@ -8,6 +8,10 @@ let currentStakingDisable = false;
 let globalStakedTokens = [];
 let globalProfitStatus = 'Ganancias';
 let globalCakeStaked = 0.00;
+let globalBuyExchangedAmount = 0.00;
+let globalBuyFiatExchangedAmount = 0.00;
+let globalSellExchangedAmount = 0.00;
+let globalSellFiatExchangedAmount = 0.00;
 let globalStableProfit = 0.00;
 let globalFiatProfit = 0.00;
 let globalFiatStaking = 0.00;
@@ -41,17 +45,10 @@ function attachOnChangeSellCurrency() {
 
 function attachOnCheckedStakingDisable() {
   const input = document.getElementById('staking-disable');
-  const investmentCakeInput = document.getElementById('investment-amount-cake');
 
   input.addEventListener('change', (e) => {
     const value = e.currentTarget.checked;
     currentStakingDisable = value;
-
-    console.log(currentStakingDisable);
-
-    // Resetea el valor del cake invertido
-    investmentCakeInput.value = '0.00';
-    investmentCakeInput.readOnly = !currentStakingDisable;
   });
 }
 
@@ -77,8 +74,6 @@ function attachStartButton() {
 
     // Obtiene el monto de inversión
     const stableInvestment = getStableTokenAmount();
-
-    console.log(currentStakingDisable);
     
     ipc.send('create-start-process-main', { stableInvestment: stableInvestment });
     ipc.send('create-staking-qr-service-main', { });
@@ -152,6 +147,10 @@ function attachStartButton() {
             profitStatus: globalProfitStatus,
             stableTokenName: currentStableToken,
             stableTokenProfit: globalStableProfit,
+            stablePrecioCompra: globalBuyExchangedAmount,
+            fiatPrecioCompra: globalBuyFiatExchangedAmount,
+            stablePrecioVenta: globalSellExchangedAmount,
+            fiatPrecioVenta: globalSellFiatExchangedAmount,
             fiatProfit: globalFiatProfit,
             fiatProfitTotal: globalFiatTotalProfit
           },
@@ -215,18 +214,16 @@ function attachCloseModal() {
 
 function validateStartButton() {
   const investmentAmount = getStableTokenAmount();
+  const cakeAmount = getCakeTokenAmount();
 
   if (investmentAmount <= 0) {
     alert('El monto de inversión no es correcto.');
     return false;
   }
 
-  if (currentStakingDisable) {
-    const cakeAmount = getCakeTokenAmount();
-    if (cakeAmount <= 0) {
-      alert('El monto de inversión de cake no es correcto.');
-      return false;
-    }
+  if (cakeAmount <= 0) {
+    alert('El monto de inversión de cake no es correcto.');
+    return false;
   }
 
   return true;
@@ -247,20 +244,18 @@ function setData(data) {
 function setBuySwap(data) {
   utils.replaceTextById('token-buy-input', formatter.token.format(data.investment));
   utils.replaceTextById('token-buy-output', formatter.token.format(data.exchangedAmount));
-  utils.replaceTextById('token-buy-fiat', formatter.token.format(data.fiatExchangeAmount));
+  utils.replaceTextById('token-buy-fiat', formatter.token.format(data.fiatExchangedAmount));
 }
 
 function setSellSwap(data) {
   utils.replaceTextById('token-sell-input', formatter.token.format(globalCakeStaked));
   utils.replaceTextById('token-sell-output', formatter.token.format(data.exchangedAmount));
-  utils.replaceTextById('token-sell-fiat', formatter.token.format(data.fiatExchangeAmount));
+  utils.replaceTextById('token-sell-fiat', formatter.token.format(data.fiatExchangedAmount));
 }
 
 function setStakingData(data) {
-  globalCakeStaked = data.tokens.reduce((s,o) => { return parseFloat(s)+parseFloat(o.cakeStaked) }, 0);
   globalFiatStaking = data.tokens.reduce((s,o) => { return s+o.fiatProfit }, 0);
   
-  utils.replaceValueById('investment-amount-cake', formatter.token.format(globalCakeStaked));
   utils.replaceValueById('staking-profit', formatter.token.format(globalFiatStaking));
 
   for (const token of data.tokens) {
@@ -274,13 +269,13 @@ function stakingDataValidation(data) {
   }
 
   if (globalCakeStaked <= 0) {
-    const cakeStaked = data.tokens.reduce((s,o) => { return parseFloat(s)+parseFloat(o.cakeStaked) }, 0);
+    globalCakeStaked = getCakeTokenAmount();
 
     utils.removeClass('qr-loading', 'hide-element');
     utils.setClass('wallet-connect-qr', 'hide-element');
 
     // Llama a los servicios de compra/venta
-    ipc.send('swap-router-service-main', { cakeStaked: cakeStaked.toString() });
+    ipc.send('swap-router-service-main', { cakeStaked: globalCakeStaked.toString() });
   }
 }
 
@@ -322,17 +317,19 @@ function setBackgroundProfit(data) {
 }
 
 function setBuyValue(fiat, rate) {
+  globalBuyExchangedAmount = rate;
+  globalBuyFiatExchangedAmount = fiat;
+  
   utils.replaceTextById('buy-price', formatter.currency.format(fiat));
   utils.replaceTextById('buy-rate', `${formatter.token.format(rate)} ${currentStableToken}`);
 }
 
 function setSellValue(fiat, rate) {
+  globalSellExchangedAmount = rate;
+  globalSellFiatExchangedAmount = fiat;
+
   utils.replaceTextById('sell-price', formatter.currency.format(fiat));
   utils.replaceTextById('sell-rate', `${formatter.token.format(rate)} ${currentStableToken}`);
-
-  if (currentStakingDisable) {
-    globalCakeStaked = getCakeTokenAmount();
-  }
 }
 
 function setStatusTag(type, tag = '') {

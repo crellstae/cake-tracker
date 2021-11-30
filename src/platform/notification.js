@@ -92,7 +92,11 @@ class Notification {
   
         notifyData.message += this.data.telegram.templates.info.message.toString().replaceAll(',', '')
           .replaceAll('#ProfitStatus#', data.profitData.profitStatus)
-          .replace('#StableToken#', data.profitData.stableTokenName)
+          .replaceAll('#StableToken#', data.profitData.stableTokenName)
+          .replace('#StablePrecioCompra#', formatter.token.format(data.profitData.stablePrecioCompra))
+          .replace('#FiatPrecioCompra#', formatter.token.format(data.profitData.fiatPrecioCompra))
+          .replace('#StablePrecioVenta#', formatter.token.format(data.profitData.stablePrecioVenta))
+          .replace('#FiatPrecioVenta#', formatter.token.format(data.profitData.fiatPrecioVenta))
           .replace('#StableTokenProfit#', formatter.token.format(data.profitData.stableTokenProfit))
           .replace('#FiatProfit#', formatter.token.format(data.profitData.fiatProfit))
           .replace('#FiatStakingTotal#', formatter.token.format(fiatStakingTotal))

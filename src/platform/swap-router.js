@@ -122,7 +122,7 @@ class SwapRouter {
       fiatProfit: fiatProfit,
       investment: this.cakeInvestment,
       exchangedAmount: sellSwapAmount,
-      fiatExchangeAmount: fiatExchanged
+      fiatExchangedAmount: fiatExchanged
     }
 
     return data;
@@ -139,7 +139,7 @@ class SwapRouter {
       fiateValue: parseFloat(this.fiat),
       investment: this.stableInvestment,
       exchangedAmount: buySwapAmount,
-      fiatExchangeAmount: fiatExchanged
+      fiatExchangedAmount: fiatExchanged
     }
 
     return data;

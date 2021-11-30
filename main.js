@@ -40,7 +40,7 @@ function createWindow () {
 }
 
 async function getBrowser() {
-  browser = await puppeteer.launch({ headless: true, slowMo: 100, devtools: false });
+  browser = await puppeteer.launch({ headless: false, slowMo: 100, devtools: true });
   return browser;
 }
 

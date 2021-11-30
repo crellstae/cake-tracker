@@ -7,7 +7,9 @@ class Staking {
   page = undefined;
   interval = undefined;
 
-  constructor() { }
+  constructor() {
+    this.data = config.data();
+  }
 
   async initialize(browser) {
     console.log(`[${new Date().toLocaleString()}] Inicializando componente de Staking.`);
@@ -36,13 +38,14 @@ class Staking {
   async getProfit(callback) {
     console.log(`[${new Date().toLocaleString()}] Obteniendo staking.`);
     
-    const loadingSelector = 'sc-fyGvY fLibQH';
+    const loadingSelector = this.data.puppeteer.selectors.staking.loadingClass;
+    const walletConnectWrapperId = this.data.puppeteer.selectors.staking.walletConnectWrapperId.replace('#', '');
+
+    // No empezar a leer hasta que se oculte WalletConnect
+    await this.page.waitForFunction(`document.getElementById('${walletConnectWrapperId}') === null`, { timeout: 60000 });
 
     // Establece solo tokens donde hay staking
     await this.clickOnStakedOnly();
-
-    // Click en el detalle de todos los tokens disponibles
-    await this.clickOnTokensEarnedDetail();
 
     // Espera hasta que cargue los tokens
     await this.page.waitForFunction(`Array.from(document.getElementsByClassName('${loadingSelector}')).length === 0`, { timeout: 60000 });
@@ -53,9 +56,6 @@ class Staking {
         const profitData = await this.getTokensEarnedData();
 
         callback(profitData);
-
-        // Previene desconexión de PancakeSwap
-        await this.pageActivate();
       } catch (err) {
         console.error(`[${new Date().toLocaleString()}] Ocurrió un error al obtener información de staking: ${err.message}`);
       }
@@ -63,7 +63,7 @@ class Staking {
   }
 
   async clickOnConnectWallet() {
-    const selector = 'nav';
+    const selector = this.data.puppeteer.selectors.staking.navTag;
 
     // Dispara evento click para conexión de la wallet
     await this.page.waitForFunction(`document.getElementsByTagName('${selector}').length > 0`);
@@ -84,7 +84,7 @@ class Staking {
   }
 
   async clickOnWalletConnectService() {
-    const selector = '#wallet-connect-walletconnect';
+    const selector = this.data.puppeteer.selectors.staking.walletConnectId;
 
     // Dispara evento click para conexión de la wallet
     await this.page.waitForSelector(selector);
@@ -106,28 +106,8 @@ class Staking {
     });
   }
 
-  async clickOnTokensEarnedDetail() {
-    const selector = 'pools-table';
-
-    // Obtiene las filas de tokens que tenemos disponibles
-    await this.page.waitForSelector('div[role=row]');
-    await this.page.evaluate(x => {
-      const table = document.getElementById(x.selector);
-      const rows = Array.from(table.querySelectorAll('div[role=row]'));
-
-      if (rows.length > 0) {
-        for (let element of rows) {
-          const cells = Array.from(element.querySelectorAll('div[role=cell]'));
-          const detail = cells.find(q => q.textContent === 'Details');
-          
-          if (detail !== undefined) detail.click();
-        }
-      }
-    }, { selector: selector });
-  }
-
   async takeQRScreenshot() {
-    const selector = '#walletconnect-wrapper';
+    const selector = this.data.puppeteer.selectors.staking.walletConnectWrapperId;
 
     // Toma captura de la imagen QR
     await this.page.waitForSelector(selector);
@@ -137,7 +117,7 @@ class Staking {
   }
 
   async getTokensEarnedData() {
-    const selector = 'pools-table';
+    const selector = this.data.puppeteer.selectors.staking.poolsTableId;
 
     // Obtiene las filas de tokens que tenemos disponibles
     await this.page.waitForSelector(`#${selector}`);
@@ -173,7 +153,7 @@ class Staking {
             if (autoCake) {
               tokenProfit.tokenName = name.textContent.trim();
             } else {
-              if (name !== undefined) tokenProfit.tokenName = name.textContent.replace('Earned', '').trim();
+              if (name !== undefined) tokenProfit.tokenName = name.textContent.replace('Earn', '').trim();
             }
           }
 
@@ -193,25 +173,6 @@ class Staking {
             if (apr !== undefined) tokenProfit.apr = apr.textContent.trim();
           }
 
-          // Se obtiene el staked
-          if (token.nextElementSibling !== undefined) {
-            const detail = token.nextElementSibling;
-
-            if (autoCake) {
-              const info = detail.querySelectorAll('div[color=textSubtle]');
-
-              if (info[1] !== undefined) {
-                tokenProfit.cakeStaked = info[1].previousElementSibling.textContent.trim();
-              }
-            } else {
-              const info = detail.querySelectorAll('div[color=text]');
-
-              if (info !== undefined && info.length > 0) {
-                if (info[3] !== undefined) tokenProfit.cakeStaked = info[3].textContent.trim();
-              }
-            }
-          }
-
           // Cálculo de USD * Fiat
           tokenProfit.fiatProfit = tokenProfit.tokenUSDProfit * x.fiat;
 
@@ -226,14 +187,6 @@ class Staking {
     });
 
     return profitData;
-  }
-
-  async pageActivate() {
-    await this.page.mouse.move(100, 100);
-    await this.page.mouse.down();
-    await this.page.mouse.move(200, 200);
-    await this.page.mouse.up();
-    await this.page.bringToFront();
   }
 
   async disconnect() {
