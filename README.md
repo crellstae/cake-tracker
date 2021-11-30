@@ -20,8 +20,8 @@ Add this file in the root path `config.json` with this content:
     }
   },
   "telegram": {
-    "token": "2130280103:AAFpROckv5Fll8Loj9EXXwKEpDVGkkPHy68",
-    "channel": "-1001737630950",
+    "token": "",
+    "channel": "",
     "templates": {
       "stopLoss": {
         "title": "<strong>STOP-LOSS</strong>\r\n\r\n",
