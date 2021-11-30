@@ -6,10 +6,8 @@ module.exports = {
     const id = data.tokenName.replace(' ', '-').toLowerCase();
     const name = data.tokenName;
     const profit = formatter.token.format(data.tokenProfit);
-    const usd = formatter.token.format(data.tokenUSDProfit);
     const fiat = formatter.token.format(data.fiatProfit);
     const apr = data.apr;
-    const staked = formatter.token.format(data.cakeStaked);
 
     // Si no existe el token en staking, lo crea
     let tokenRow = rowElement.querySelector(`#staking-token-${id}`);
@@ -19,12 +17,11 @@ module.exports = {
       tokenRow.id = `staking-token-${id}`;
       tokenRow.classList.add('box');
       tokenRow.innerHTML = `
-        <span><img class="token-staking-logo" src="${data.logo}" /></span>
+        <span><img id="token-staking-logo" class="token-staking-logo" src="${data.logo}" /></span>
         <span class="token-staking-detail">
           <span style="font-size: 12px;">${name}: <span class="data-bold" id="token-staking-profit">${profit}</span>&nbsp;</span>
           <span style="font-size: 12px;">MXN $: <span class="data-bold" id="token-staking-fiat">${fiat}</span>&nbsp;</span>
           <span style="font-size: 12px;">APR: <span class="data-bold" id="token-staking-apr">${apr}</span>&nbsp;</span>
-          <span style="font-size: 12px;">STAKED: <span class="data-bold" id="token-staking-staked">${staked}</span>&nbsp;</span>
         </span>
       `;
 
@@ -33,10 +30,10 @@ module.exports = {
     };
 
     // Si ya existe, lo actualiza
+    module.exports.replaceSrcByIdAndQuerySelector(tokenRow, '#token-staking-logo', data.logo);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-profit', profit);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-fiat', fiat);
     module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-apr', apr);
-    module.exports.replaceTextByIdAndQuerySelector(tokenRow, '#token-staking-staked', staked);
   },
   replaceText: (selector, text) => {
     const elements = document.getElementsByClassName(selector);
@@ -56,6 +53,10 @@ module.exports = {
   replaceTextByIdAndQuerySelector: (source, selector, text) => {
     const element = source.querySelector(selector);
     if (element !== undefined) element.textContent = text;
+  },
+  replaceSrcByIdAndQuerySelector: (source, selector, src) => {
+    const element = source.querySelector(selector);
+    if (element !== undefined) element.src = src;
   },
   toggleClass: (selector, className) => {
     const element = document.getElementById(selector);

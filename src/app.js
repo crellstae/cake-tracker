@@ -8,10 +8,15 @@ let currentStakingDisable = false;
 let globalStakedTokens = [];
 let globalProfitStatus = 'Ganancias';
 let globalCakeStaked = 0.00;
+let globalBuyExchangedAmount = 0.00;
+let globalBuyFiatExchangedAmount = 0.00;
+let globalSellExchangedAmount = 0.00;
+let globalSellFiatExchangedAmount = 0.00;
 let globalStableProfit = 0.00;
 let globalFiatProfit = 0.00;
 let globalFiatStaking = 0.00;
 let globalFiatTotalProfit = 0.00;
+let stakingAlreadyPassed = false;
 let stakingModalAlreadyHidden = false;
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -41,17 +46,10 @@ function attachOnChangeSellCurrency() {
 
 function attachOnCheckedStakingDisable() {
   const input = document.getElementById('staking-disable');
-  const investmentCakeInput = document.getElementById('investment-amount-cake');
 
   input.addEventListener('change', (e) => {
     const value = e.currentTarget.checked;
     currentStakingDisable = value;
-
-    console.log(currentStakingDisable);
-
-    // Resetea el valor del cake invertido
-    investmentCakeInput.value = '0.00';
-    investmentCakeInput.readOnly = !currentStakingDisable;
   });
 }
 
@@ -77,8 +75,6 @@ function attachStartButton() {
 
     // Obtiene el monto de inversión
     const stableInvestment = getStableTokenAmount();
-
-    console.log(currentStakingDisable);
     
     ipc.send('create-start-process-main', { stableInvestment: stableInvestment });
     ipc.send('create-staking-qr-service-main', { });
@@ -98,7 +94,6 @@ function attachStartButton() {
         setStatusTag('sell', 'is-success');
 
         if (currentStakingDisable && !stakingModalAlreadyHidden) {
-          hideQRModal();
           stakingModalAlreadyHidden = true;
         }
       }
@@ -114,7 +109,14 @@ function attachStartButton() {
 
       // Establece los valores de staking
       if (result.type === 'staking') {
-        if (result.error) return setStatusTag('staking', 'is-danger');
+        if (result.error) {
+          if (!stakingAlreadyPassed) {
+            const stopButton = getStopButton();
+            stopButton.click();
+          }
+
+          return setStatusTag('staking', 'is-danger');
+        }
 
         globalStakedTokens = result.tokens;
 
@@ -132,13 +134,22 @@ function attachStartButton() {
 
     ipc.on('staking-qr-service-renderer', (event, result) => {
       if (result.show) {
-        // Ocultar loading y volver a mostrar imagen vacía para reemplazo
-        utils.setClass('qr-loading', 'hide-element');
-        utils.removeClass('wallet-connect-qr', 'hide-element');
-        utils.setBase64Image('wallet-connect-qr', result.base64Image);
+        showQR(result);
 
         // Lanzar llamada para iniciar captura de staking y lanzar servicio de venta
         ipc.send('staking-profit-service-main', { });
+      }
+
+      if (result.loading) {
+        console.log('Loading');
+        console.log(result);
+        showLoadingOnQRModal();
+      }
+
+      if (result.hide) {
+        console.log('hide');
+        console.log(result);
+        hideQRModal();
       }
     });
 
@@ -152,13 +163,15 @@ function attachStartButton() {
             profitStatus: globalProfitStatus,
             stableTokenName: currentStableToken,
             stableTokenProfit: globalStableProfit,
+            stablePrecioCompra: globalBuyExchangedAmount,
+            fiatPrecioCompra: globalBuyFiatExchangedAmount,
+            stablePrecioVenta: globalSellExchangedAmount,
+            fiatPrecioVenta: globalSellFiatExchangedAmount,
             fiatProfit: globalFiatProfit,
             fiatProfitTotal: globalFiatTotalProfit
           },
           screenshot: base64Image.replace('data:image/jpeg;base64,', '')
         }
-
-        console.log(data);
 
         ipc.send('info-service-main', data);
       });
@@ -215,18 +228,16 @@ function attachCloseModal() {
 
 function validateStartButton() {
   const investmentAmount = getStableTokenAmount();
+  const cakeAmount = getCakeTokenAmount();
 
   if (investmentAmount <= 0) {
     alert('El monto de inversión no es correcto.');
     return false;
   }
 
-  if (currentStakingDisable) {
-    const cakeAmount = getCakeTokenAmount();
-    if (cakeAmount <= 0) {
-      alert('El monto de inversión de cake no es correcto.');
-      return false;
-    }
+  if (cakeAmount <= 0) {
+    alert('El monto de inversión de cake no es correcto.');
+    return false;
   }
 
   return true;
@@ -247,20 +258,18 @@ function setData(data) {
 function setBuySwap(data) {
   utils.replaceTextById('token-buy-input', formatter.token.format(data.investment));
   utils.replaceTextById('token-buy-output', formatter.token.format(data.exchangedAmount));
-  utils.replaceTextById('token-buy-fiat', formatter.token.format(data.fiatExchangeAmount));
+  utils.replaceTextById('token-buy-fiat', formatter.token.format(data.fiatExchangedAmount));
 }
 
 function setSellSwap(data) {
   utils.replaceTextById('token-sell-input', formatter.token.format(globalCakeStaked));
   utils.replaceTextById('token-sell-output', formatter.token.format(data.exchangedAmount));
-  utils.replaceTextById('token-sell-fiat', formatter.token.format(data.fiatExchangeAmount));
+  utils.replaceTextById('token-sell-fiat', formatter.token.format(data.fiatExchangedAmount));
 }
 
 function setStakingData(data) {
-  globalCakeStaked = data.tokens.reduce((s,o) => { return parseFloat(s)+parseFloat(o.cakeStaked) }, 0);
   globalFiatStaking = data.tokens.reduce((s,o) => { return s+o.fiatProfit }, 0);
   
-  utils.replaceValueById('investment-amount-cake', formatter.token.format(globalCakeStaked));
   utils.replaceValueById('staking-profit', formatter.token.format(globalFiatStaking));
 
   for (const token of data.tokens) {
@@ -274,13 +283,11 @@ function stakingDataValidation(data) {
   }
 
   if (globalCakeStaked <= 0) {
-    const cakeStaked = data.tokens.reduce((s,o) => { return parseFloat(s)+parseFloat(o.cakeStaked) }, 0);
-
-    utils.removeClass('qr-loading', 'hide-element');
-    utils.setClass('wallet-connect-qr', 'hide-element');
+    stakingAlreadyPassed = true;
+    globalCakeStaked = getCakeTokenAmount();
 
     // Llama a los servicios de compra/venta
-    ipc.send('swap-router-service-main', { cakeStaked: cakeStaked.toString() });
+    ipc.send('swap-router-service-main', { cakeStaked: globalCakeStaked.toString() });
   }
 }
 
@@ -322,17 +329,19 @@ function setBackgroundProfit(data) {
 }
 
 function setBuyValue(fiat, rate) {
+  globalBuyExchangedAmount = rate;
+  globalBuyFiatExchangedAmount = fiat;
+  
   utils.replaceTextById('buy-price', formatter.currency.format(fiat));
   utils.replaceTextById('buy-rate', `${formatter.token.format(rate)} ${currentStableToken}`);
 }
 
 function setSellValue(fiat, rate) {
+  globalSellExchangedAmount = rate;
+  globalSellFiatExchangedAmount = fiat;
+
   utils.replaceTextById('sell-price', formatter.currency.format(fiat));
   utils.replaceTextById('sell-rate', `${formatter.token.format(rate)} ${currentStableToken}`);
-
-  if (currentStakingDisable) {
-    globalCakeStaked = getCakeTokenAmount();
-  }
 }
 
 function setStatusTag(type, tag = '') {
@@ -351,7 +360,6 @@ function setStatusTag(type, tag = '') {
       utils.setClass('staking-status', tag);
       utils.removeImage('staking-status-image');
       setStatusImage(type, tag);
-      hideQRModal();
       break;
     case 'loading':
       utils.setLoading('buy-status-image');
@@ -408,10 +416,30 @@ function changeSellCurrency(currentStableToken) {
   utils.replaceText('token-sell', currentStableToken);
 }
 
+function showQR(result) {
+  // Ocultar loading y volver a mostrar imagen vacía para reemplazo
+  utils.setClass('qr-loading', 'hide-element');
+  utils.removeClass('wallet-connect-qr', 'hide-element');
+  utils.setBase64Image('wallet-connect-qr', result.base64Image);
+}
+
+function showLoadingOnQRModal() {
+  // Mostrar loading y volver a mostrar imagen vacía para reemplazo
+  utils.removeClass('qr-loading', 'hide-element');
+  utils.setClass('wallet-connect-qr', 'hide-element');
+}
+
 function hideQRModal() {
+  // Quitar modal de QR y ocultar elementos
   utils.removeClass('qr-modal', 'is-active');
   utils.setClass('qr-loading', 'hide-element');
   utils.setClass('wallet-connect-qr', 'hide-element');
+}
+
+function getStopButton() {
+  const button = document.getElementById('stop-button');
+  
+  return button;
 }
 
 function getStableTokenAmount() {
