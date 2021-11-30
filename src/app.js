@@ -16,6 +16,7 @@ let globalStableProfit = 0.00;
 let globalFiatProfit = 0.00;
 let globalFiatStaking = 0.00;
 let globalFiatTotalProfit = 0.00;
+let stakingAlreadyPassed = false;
 let stakingModalAlreadyHidden = false;
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -93,7 +94,6 @@ function attachStartButton() {
         setStatusTag('sell', 'is-success');
 
         if (currentStakingDisable && !stakingModalAlreadyHidden) {
-          hideQRModal();
           stakingModalAlreadyHidden = true;
         }
       }
@@ -109,7 +109,14 @@ function attachStartButton() {
 
       // Establece los valores de staking
       if (result.type === 'staking') {
-        if (result.error) return setStatusTag('staking', 'is-danger');
+        if (result.error) {
+          if (!stakingAlreadyPassed) {
+            const stopButton = getStopButton();
+            stopButton.click();
+          }
+
+          return setStatusTag('staking', 'is-danger');
+        }
 
         globalStakedTokens = result.tokens;
 
@@ -127,13 +134,22 @@ function attachStartButton() {
 
     ipc.on('staking-qr-service-renderer', (event, result) => {
       if (result.show) {
-        // Ocultar loading y volver a mostrar imagen vacía para reemplazo
-        utils.setClass('qr-loading', 'hide-element');
-        utils.removeClass('wallet-connect-qr', 'hide-element');
-        utils.setBase64Image('wallet-connect-qr', result.base64Image);
+        showQR(result);
 
         // Lanzar llamada para iniciar captura de staking y lanzar servicio de venta
         ipc.send('staking-profit-service-main', { });
+      }
+
+      if (result.loading) {
+        console.log('Loading');
+        console.log(result);
+        showLoadingOnQRModal();
+      }
+
+      if (result.hide) {
+        console.log('hide');
+        console.log(result);
+        hideQRModal();
       }
     });
 
@@ -156,8 +172,6 @@ function attachStartButton() {
           },
           screenshot: base64Image.replace('data:image/jpeg;base64,', '')
         }
-
-        console.log(data);
 
         ipc.send('info-service-main', data);
       });
@@ -269,10 +283,8 @@ function stakingDataValidation(data) {
   }
 
   if (globalCakeStaked <= 0) {
+    stakingAlreadyPassed = true;
     globalCakeStaked = getCakeTokenAmount();
-
-    utils.removeClass('qr-loading', 'hide-element');
-    utils.setClass('wallet-connect-qr', 'hide-element');
 
     // Llama a los servicios de compra/venta
     ipc.send('swap-router-service-main', { cakeStaked: globalCakeStaked.toString() });
@@ -348,7 +360,6 @@ function setStatusTag(type, tag = '') {
       utils.setClass('staking-status', tag);
       utils.removeImage('staking-status-image');
       setStatusImage(type, tag);
-      hideQRModal();
       break;
     case 'loading':
       utils.setLoading('buy-status-image');
@@ -405,10 +416,30 @@ function changeSellCurrency(currentStableToken) {
   utils.replaceText('token-sell', currentStableToken);
 }
 
+function showQR(result) {
+  // Ocultar loading y volver a mostrar imagen vacía para reemplazo
+  utils.setClass('qr-loading', 'hide-element');
+  utils.removeClass('wallet-connect-qr', 'hide-element');
+  utils.setBase64Image('wallet-connect-qr', result.base64Image);
+}
+
+function showLoadingOnQRModal() {
+  // Mostrar loading y volver a mostrar imagen vacía para reemplazo
+  utils.removeClass('qr-loading', 'hide-element');
+  utils.setClass('wallet-connect-qr', 'hide-element');
+}
+
 function hideQRModal() {
+  // Quitar modal de QR y ocultar elementos
   utils.removeClass('qr-modal', 'is-active');
   utils.setClass('qr-loading', 'hide-element');
   utils.setClass('wallet-connect-qr', 'hide-element');
+}
+
+function getStopButton() {
+  const button = document.getElementById('stop-button');
+  
+  return button;
 }
 
 function getStableTokenAmount() {

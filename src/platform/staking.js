@@ -35,7 +35,7 @@ class Staking {
     callback(screenshot);    
   }
 
-  async getProfit(callback) {
+  async getProfit(callback, callbackOnWalletConnectPassed) {
     console.log(`[${new Date().toLocaleString()}] Obteniendo staking.`);
     
     const loadingSelector = this.data.puppeteer.selectors.staking.loadingClass;
@@ -43,6 +43,8 @@ class Staking {
 
     // No empezar a leer hasta que se oculte WalletConnect
     await this.page.waitForFunction(`document.getElementById('${walletConnectWrapperId}') === null`, { timeout: 60000 });
+
+    callbackOnWalletConnectPassed();
 
     // Establece solo tokens donde hay staking
     await this.clickOnStakedOnly();

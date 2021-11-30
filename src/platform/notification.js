@@ -10,10 +10,12 @@ class Notification {
   notificationPool = []; // Pool notificaciones, hasta 5 en espera hasta renovar
   lastNotificationSent = undefined;
 
-  constructor(type) {
+  constructor(type, countdownTime) {
     this.type = type;
     this.data = config.data();
     this.telegram = new Telegram();
+
+    if (countdownTime > 0) this.notificationCountdownTime = countdownTime;
   }
 
   async trackAlert(profitData) {
