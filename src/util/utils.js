@@ -3,6 +3,7 @@ const formatter = require('../platform/util/formatter');
 module.exports = {
   updateTokenToStaking: (selector, data) => {
     const rowElement = document.getElementById('staking-rows');
+    const id = data.tokenName.replace(' ', '-').toLowerCase();
     const name = data.tokenName;
     const profit = formatter.token.format(data.tokenProfit);
     const usd = formatter.token.format(data.tokenUSDProfit);
@@ -11,11 +12,11 @@ module.exports = {
     const staked = formatter.token.format(data.cakeStaked);
 
     // Si no existe el token en staking, lo crea
-    let tokenRow = rowElement.querySelector(`#staking-token-${name.toLowerCase()}`);
+    let tokenRow = rowElement.querySelector(`#staking-token-${id}`);
     if (tokenRow === undefined || tokenRow === null) {
       // Si no existe, lo inserta
       tokenRow = document.createElement('div');
-      tokenRow.id = `staking-token-${name.toLowerCase()}`;
+      tokenRow.id = `staking-token-${id}`;
       tokenRow.classList.add('box');
       tokenRow.innerHTML = `
         <span><img class="token-staking-logo" src="${data.logo}" /></span>
