@@ -14,6 +14,7 @@ class Staking {
 
     this.fiat = await fiat.value;
     this.page = await browser.newPage();
+
     await this.page.goto(config.pancakeSwapStakingURL);
   }
 
@@ -32,8 +33,9 @@ class Staking {
     callback(screenshot);    
   }
 
-  async getProfit(callback, callbackInterval) {
+  async getProfit(callback) {
     console.log(`[${new Date().toLocaleString()}] Obteniendo staking.`);
+    
     const loadingSelector = 'sc-fyGvY fLibQH';
 
     // Establece solo tokens donde hay staking
@@ -50,13 +52,14 @@ class Staking {
       try {
         const profitData = await this.getTokensEarnedData();
 
-        callbackInterval(profitData);
+        callback(profitData);
+
+        // Previene desconexión de PancakeSwap
+        await this.pageActivate();
       } catch (err) {
         console.error(`[${new Date().toLocaleString()}] Ocurrió un error al obtener información de staking: ${err.message}`);
       }
     }, 5000);
-
-    callback();
   }
 
   async clickOnConnectWallet() {
@@ -159,17 +162,16 @@ class Staking {
           }
 
           // Se obtiene nombre
-          if (cells[1] !== undefined) {
-            const name = cells[1].querySelector('div[color=textSubtle]');
+          if (cells[0] !== undefined) {
+            const name = cells[0].querySelector('div[color=text]');
 
             // Detectar si es Auto Cake Staking
-            if (name.textContent.includes("Recent")) {
-              console.log(`[${new Date().toLocaleString()}] Detectado pool AutoCake.`);
+            if (name.textContent === 'Auto CAKE') {
               autoCake = true;
             }
 
             if (autoCake) {
-              tokenProfit.tokenName = name.textContent.replace('Recent', '').replace('profit', '').trim();
+              tokenProfit.tokenName = name.textContent.trim();
             } else {
               if (name !== undefined) tokenProfit.tokenName = name.textContent.replace('Earned', '').trim();
             }
@@ -224,6 +226,14 @@ class Staking {
     });
 
     return profitData;
+  }
+
+  async pageActivate() {
+    await this.page.mouse.move(100, 100);
+    await this.page.mouse.down();
+    await this.page.mouse.move(200, 200);
+    await this.page.mouse.up();
+    await this.page.bringToFront();
   }
 
   async disconnect() {
