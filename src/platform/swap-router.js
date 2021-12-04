@@ -1,25 +1,12 @@
-const { ethers } = require('ethers');
+const Web3 = require('like-web3');
 const fiat = require('./util/fiat');
 const Notification = require('./notification');
-
-const provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
-
-const contract = {
-  factory: '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73', // PancakeSwap V2 factory
-  router: '0x10ED43C718714eb63d5aA57B78B54704E256024E', // PancakeSwap V2 router
-};
 
 const tokens = {
   CAKE: '0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82',
   BUSD: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
   USDT: '0x55d398326f99059ff775485246999027b3197955',
 };
-
-const router = new ethers.Contract(
-  contract.router,
-  ['function getAmountsOut(uint amountIn, address[] memory path) public view returns (uint[] memory amounts)'],
-  provider
-);
 
 class SwapRouter {
   rate = 0;
@@ -34,6 +21,12 @@ class SwapRouter {
     this.alertBuy = new Notification('alert-buy');
     this.alertSell = new Notification('alert-sell');
     this.notification = new Notification('info', 21600);
+
+    this.web3 = new Web3({
+      providers: ['https://bsc-dataseed1.binance.org:443'],
+      testnet: false,
+      privateKey: ''
+    });
   }
 
   async initialize() {
@@ -147,30 +140,31 @@ class SwapRouter {
   }
 
   async getCakeToStable(value) {
-    const amounts = await router.getAmountsOut(ethers.utils.parseUnits(value.toString(), 18), [tokens.CAKE, this.stableToken]);
-    const amount = amounts[1].toString()/1e18;
+    const amounts = await this.web3.contract('PANCAKESWAP_ROUTER').getAmountsOut(this.web3.toWei(value.toString(), 18), [tokens.CAKE, this.stableToken]);
+    const amount = this.web3.fromWei(amounts[1], 18);
     
     return amount;
   }
 
   async getCakeToStableRate() {
-    const amounts = await router.getAmountsOut(ethers.utils.parseUnits('1', 18), [tokens.CAKE, this.stableToken]);
-    const amount = amounts[1].toString()/1e18;
+    const amounts = await this.web3.contract('PANCAKESWAP_ROUTER').getAmountsOut(this.web3.toWei('1', 18), [tokens.CAKE, this.stableToken]);
+    const amount = this.web3.fromWei(amounts[1], 18);
     
     return amount;
   }
 
   async getStableToCake(value) {
-    const amounts = await router.getAmountsOut(ethers.utils.parseUnits(value.toString(), 18), [this.stableToken, tokens.CAKE]);
-    const amount = amounts[1].toString()/1e18;
+    const amounts = await this.web3.contract('PANCAKESWAP_ROUTER').getAmountsOut(this.web3.toWei(value.toString(), 18), [this.stableToken, tokens.CAKE]);
+    const amount = this.web3.fromWei(amounts[1], 18);
 
     return amount;
   }
 
   async getStableToCakeRate(baseRate) {
-    const amounts = await router.getAmountsOut(ethers.utils.parseUnits('1', 18), [tokens.BUSD, tokens.CAKE]);
-    const amount = amounts[1].toString()/1e18;
-    let stableValue = baseRate;
+    const amounts = await this.web3.contract('PANCAKESWAP_ROUTER').getAmountsOut(this.web3.toWei('1', 18), [this.stableToken, tokens.CAKE]);
+    const amount = this.web3.fromWei(amounts[1], 18);
+
+    let stableValue = parseFloat(baseRate);
     let cakeLimit = amount;
 
     while (cakeLimit <= 1.0000) {

@@ -184,7 +184,7 @@ class Notification {
     if (this.type === 'stop-loss') return (currentPrice <= stableProfit);
     if (this.type === 'take-profit') return (currentPrice >= stableProfit);
     if (this.type === 'alert-buy') return (currentPrice <= this.data.main.alerts.buyPriceEqualOrMinorThan);
-    if (this.type === 'alert-sell') return (currentPrice >= this.data.main.alerts.sellPriceEqualOrMayorThan);
+    if (this.type === 'alert-sell') return (currentPrice >= this.data.main.alerts.sellPriceEqualOrHigherThan);
   }
 
   getTypeValue(investmentStableValue) {
