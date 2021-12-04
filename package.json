@@ -1,6 +1,6 @@
 {
   "name": "cake-tracker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cake tracker is an app to visualize and calculate your staking profit on PancakeSwap.",
   "main": "main.js",
   "scripts": {
