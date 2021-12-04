@@ -262,6 +262,8 @@ function setBuySwap(data) {
 }
 
 function setSellSwap(data) {
+  globalCakeStaked = getCakeTokenAmount();
+
   utils.replaceTextById('token-sell-input', formatter.token.format(globalCakeStaked));
   utils.replaceTextById('token-sell-output', formatter.token.format(data.exchangedAmount));
   utils.replaceTextById('token-sell-fiat', formatter.token.format(data.fiatExchangedAmount));
